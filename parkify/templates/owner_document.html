@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Documents - Parkify</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100">
+
+<div class="max-w-5xl mx-auto p-6">
+
+    <div class="bg-white rounded-2xl shadow-sm border p-8">
+
+        <div class="mb-8">
+
+            <h1 class="text-3xl font-bold text-slate-800">
+                Upload Verification Documents
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Submit documents for admin verification.
+            </p>
+
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label class="block mb-2 font-medium">
+                        Document ID
+                    </label>
+
+                    <input
+                        type="text"
+                        name="document_id"
+                        class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required>
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-medium">
+                        Document Type
+                    </label>
+
+                    <select
+                        name="document_type"
+                        class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required>
+
+                        <option value="">
+                            Select Document
+                        </option>
+
+                        <option>
+                            Citizenship
+                        </option>
+
+                        <option>
+                            PAN Card
+                        </option>
+
+                        <option>
+                            Driving License
+                        </option>
+
+                        <option>
+                            Company Registration
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6">
+
+                <label class="block mb-2 font-medium">
+                    Upload Document
+                </label>
+
+                <input
+                    type="file"
+                    name="document_file"
+                    class="w-full border rounded-xl px-4 py-3"
+                    required>
+
+            </div>
+
+            <div class="mt-6">
+
+                <label class="block mb-2 font-medium">
+                    Verification Status
+                </label>
+
+                <input
+                    type="text"
+                    value="Pending Approval"
+                    disabled
+                    class="w-full bg-slate-100 border rounded-xl px-4 py-3">
+
+            </div>
+
+            <div class="mt-8">
+
+                <button
+                    type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-medium">
+                    Upload Document
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

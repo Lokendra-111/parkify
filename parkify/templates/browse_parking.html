@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Parking | Parkify</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-100">
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="{% url 'dashboard' %}" class="text-2xl font-bold text-slate-900">Parkify</a>
+
+        <div class="flex items-center gap-4">
+            <a href="{% url 'my_bookings' %}" class="text-slate-600 hover:text-emerald-600 font-medium">My Bookings</a>
+            <a href="{% url 'dashboard' %}" class="text-slate-600 hover:text-emerald-600 font-medium">Dashboard</a>
+            <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto p-6">
+
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold">Find Parking</h2>
+        <p class="text-slate-500 mt-2">Search available parking spaces near you and book instantly.</p>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" class="bg-white rounded-2xl shadow-sm border p-6 mb-8 grid md:grid-cols-4 gap-4">
+
+        <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-slate-600 mb-1">Location</label>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by area, street, landmark..."
+                   class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">Vehicle Type</label>
+            <select name="vehicle" class="w-full border rounded-xl px-4 py-3">
+                <option value="">Any</option>
+                <option value="Car" {% if vehicle == 'Car' %}selected{% endif %}>Car</option>
+                <option value="Bike" {% if vehicle == 'Bike' %}selected{% endif %}>Bike</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">Sort By</label>
+            <select name="sort" class="w-full border rounded-xl px-4 py-3">
+                <option value="">Newest</option>
+                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+        </div>
+
+        <div class="md:col-span-4">
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+                <i data-lucide="search" class="w-5 h-5"></i>
+                Search Parking
+            </button>
+        </div>
+
+    </form>
+
+    <!-- Results -->
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        {% for item in results %}
+
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-xl transition">
+
+            {% if item.parking.parking_image %}
+            <img src="{{ item.parking.parking_image.url }}" class="w-full h-44 object-cover">
+            {% else %}
+            <div class="w-full h-44 bg-slate-200 flex items-center justify-center text-slate-400">
+                <i data-lucide="parking-circle" class="w-12 h-12"></i>
+            </div>
+            {% endif %}
+
+            <div class="p-5">
+
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg font-bold">{{ item.parking.parking_name }}</h3>
+                    <span class="text-emerald-600 font-bold whitespace-nowrap">Rs {{ item.parking.rate_per_hour }}/hr</span>
+                </div>
+
+                <p class="text-slate-500 text-sm flex items-center gap-1 mb-4">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    {{ item.parking.location }}
+                </p>
+
+                <div class="flex gap-3 mb-4 text-sm">
+                    <span class="px-3 py-1 rounded-full {% if item.car_available > 0 %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                        Car: {{ item.car_available }} free
+                    </span>
+                    <span class="px-3 py-1 rounded-full {% if item.bike_available > 0 %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                        Bike: {{ item.bike_available }} free
+                    </span>
+                </div>
+
+                <a href="{% url 'view_parking' item.parking.id %}"
+                   class="block text-center bg-slate-900 hover:bg-emerald-600 text-white py-3 rounded-xl font-medium transition">
+                    View & Book
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-span-full text-center py-20 text-slate-500 bg-white rounded-2xl border">
+            <i data-lucide="search-x" class="w-12 h-12 mx-auto mb-4 opacity-40"></i>
+            No parking spaces found. Try a different search.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</main>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | Parkify</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-100">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200">
+
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">
+                    Parkify
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <span class="font-medium">
+                    {{ user.first_name }} {{ user.last_name }}
+                </span>
+
+                <a href="{% url 'logout' %}"
+                   class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6">
+
+        <!-- Page Heading -->
+
+        <div class="mb-8">
+
+            <h2 class="text-3xl font-bold">
+                My Bookings
+            </h2>
+
+            <p class="text-slate-500 mt-2">
+                View all your parking reservations and payment details.
+            </p>
+
+        </div>
+
+        <!-- Booking Table -->
+
+        <div class="bg-white rounded-2xl shadow-sm border p-6">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <h3 class="text-xl font-bold">
+                    Booking History
+                </h3>
+
+            </div>
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full min-w-[1200px]">
+
+                    <thead>
+
+                        <tr class="border-b text-slate-600">
+
+                            <th class="text-left py-4">Booking ID</th>
+                            <th class="text-left py-4">Parking Lot</th>
+                            <th class="text-left py-4">Vehicle No</th>
+                            <th class="text-left py-4">Vehicle Type</th>
+                            <th class="text-left py-4">Date</th>
+                            <th class="text-left py-4">Check In</th>
+                            <th class="text-left py-4">Check Out</th>
+                            <th class="text-left py-4">Duration</th>
+                            <th class="text-left py-4">Amount</th>
+                            <th class="text-left py-4">Payment</th>
+                            <th class="text-left py-4">Status</th>
+                            <th class="text-left py-4">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for booking in bookings %}
+
+                        <tr class="border-b hover:bg-slate-50">
+
+                            <td class="py-4">
+                                #{{ booking.id }}
+                            </td>
+
+                            <td>
+                                {{ booking.parking_name }}
+                            </td>
+
+                            <td>
+                                {{ booking.vehicle_number }}
+                            </td>
+
+                            <td>
+                                {{ booking.vehicle_type }}
+                            </td>
+
+                            <td>
+                                {{ booking.booking_date }}
+                            </td>
+
+                            <td>
+                                {{ booking.check_in }}
+                            </td>
+
+                            <td>
+                                {{ booking.check_out }}
+                            </td>
+
+                            <td>
+                                {{ booking.duration }} hrs
+                            </td>
+
+                            <td>
+                                Rs {{ booking.amount }}
+                            </td>
+
+                            <td>
+
+                                {% if booking.payment_status == 'Paid' %}
+
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                                    Paid
+                                </span>
+
+                                {% else %}
+
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                                    Unpaid
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if booking.status == 'Completed' %}
+
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                                    Completed
+                                </span>
+
+                                {% elif booking.status == 'Active' %}
+
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                                    Active
+                                </span>
+
+                                {% elif booking.status == 'Cancelled' %}
+
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+                                    Cancelled
+                                </span>
+
+                                {% else %}
+
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                                    Pending
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                <div class="flex gap-2">
+                                {% if booking.payment_status == 'Unpaid' and booking.status != 'Cancelled' %}
+                                <a href="{% url 'payment_page' booking.id %}"
+                                   class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm">
+                                    Pay Now
+                                </a>
+                                {% endif %}
+                                {% if booking.status == 'Pending' or booking.status == 'Active' %}
+                                <a href="{% url 'cancel_booking' booking.id %}"
+                                   onclick="return confirm('Cancel this booking?');"
+                                   class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm">
+                                    Cancel
+                                </a>
+                                {% else %}
+                                <span class="text-slate-400 text-sm">—</span>
+                                {% endif %}
+                                </div>
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="12"
+                                class="text-center py-10 text-slate-500">
+
+                                No bookings found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

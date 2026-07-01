@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment | Parkify</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-100">
+
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="{% url 'dashboard' %}" class="text-2xl font-bold text-slate-900">Parkify</a>
+        <a href="{% url 'my_bookings' %}" class="text-slate-600 hover:text-emerald-600 font-medium">My Bookings</a>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto p-6 grid lg:grid-cols-5 gap-8">
+
+    <!-- Order Summary -->
+    <div class="lg:col-span-2">
+
+        <div class="bg-white rounded-2xl shadow-sm border p-6 sticky top-6">
+
+            <h2 class="text-xl font-bold mb-4">Booking Summary</h2>
+
+            <div class="space-y-3 text-sm">
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Parking Lot</span>
+                    <span class="font-medium">{{ booking.parking_name }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Vehicle</span>
+                    <span class="font-medium">{{ booking.vehicle_number }} ({{ booking.vehicle_type }})</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Date</span>
+                    <span class="font-medium">{{ booking.booking_date }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Time</span>
+                    <span class="font-medium">{{ booking.check_in }} – {{ booking.check_out }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Duration</span>
+                    <span class="font-medium">{{ booking.duration }} hrs</span>
+                </div>
+
+            </div>
+
+            <div class="border-t mt-4 pt-4 flex justify-between items-center">
+                <span class="text-slate-600 font-medium">Total Amount</span>
+                <span class="text-2xl font-bold text-emerald-600">Rs {{ booking.amount }}</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="lg:col-span-3">
+
+        <div class="bg-white rounded-2xl shadow-sm border p-6">
+
+            <h2 class="text-xl font-bold mb-1">Choose Payment Method</h2>
+            <p class="text-slate-500 text-sm mb-6">This is a simulated checkout — no real money is charged.</p>
+
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                <div class="px-4 py-3 rounded-xl {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Method Tabs -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+
+                <button type="button" data-method="Card" class="method-tab border-2 rounded-xl p-4 text-center font-medium border-emerald-500 bg-emerald-50">
+                    <i data-lucide="credit-card" class="mx-auto mb-1"></i>
+                    Card
+                </button>
+
+                <button type="button" data-method="Esewa" class="method-tab border-2 rounded-xl p-4 text-center font-medium border-slate-200">
+                    <i data-lucide="wallet" class="mx-auto mb-1"></i>
+                    eSewa
+                </button>
+
+                <button type="button" data-method="Khalti" class="method-tab border-2 rounded-xl p-4 text-center font-medium border-slate-200">
+                    <i data-lucide="smartphone" class="mx-auto mb-1"></i>
+                    Khalti
+                </button>
+
+            </div>
+
+            <form method="POST" action="{% url 'process_payment' booking.id %}" id="paymentForm" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="method" id="methodInput" value="Card">
+
+                <!-- Card fields -->
+                <div id="cardFields" class="space-y-4">
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Card Number</label>
+                        <input type="text" name="card_number" maxlength="19" placeholder="4242 4242 4242 4242"
+                               class="w-full border rounded-xl px-4 py-3">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Expiry</label>
+                            <input type="text" name="expiry" placeholder="MM/YY" class="w-full border rounded-xl px-4 py-3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">CVV</label>
+                            <input type="text" name="cvv" maxlength="4" placeholder="123" class="w-full border rounded-xl px-4 py-3">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Wallet field (eSewa / Khalti) -->
+                <div id="walletFields" class="space-y-4 hidden">
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1" id="walletLabel">Registered Mobile Number</label>
+                        <input type="text" name="wallet_id" placeholder="98XXXXXXXX" class="w-full border rounded-xl px-4 py-3">
+                    </div>
+
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-emerald-600 transition text-white py-3 rounded-xl font-medium mt-4">
+                    Pay Rs {{ booking.amount }}
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+lucide.createIcons();
+
+const tabs = document.querySelectorAll('.method-tab');
+const methodInput = document.getElementById('methodInput');
+const cardFields = document.getElementById('cardFields');
+const walletFields = document.getElementById('walletFields');
+const walletLabel = document.getElementById('walletLabel');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('border-emerald-500', 'bg-emerald-50'));
+        tabs.forEach(t => t.classList.add('border-slate-200'));
+
+        tab.classList.add('border-emerald-500', 'bg-emerald-50');
+        tab.classList.remove('border-slate-200');
+
+        const method = tab.dataset.method;
+        methodInput.value = method;
+
+        if (method === 'Card') {
+            cardFields.classList.remove('hidden');
+            walletFields.classList.add('hidden');
+        } else {
+            cardFields.classList.add('hidden');
+            walletFields.classList.remove('hidden');
+            walletLabel.textContent = method + ' Registered Mobile Number';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

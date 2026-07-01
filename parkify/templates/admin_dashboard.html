@@ -1,0 +1,690 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkify Admin Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        ::-webkit-scrollbar{
+            width:8px;
+        }
+        ::-webkit-scrollbar-thumb{
+            background:#94a3b8;
+            border-radius:10px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100">
+
+<div class="flex min-h-screen">
+
+    <!-- Mobile Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/40 hidden z-40 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
+
+        <div class="p-6 border-b border-slate-800">
+            <h1 class="text-3xl font-bold text-emerald-400">
+                Parkify
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Admin Control Center
+            </p>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+
+            <button onclick="showSection('dashboard-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="layout-dashboard"></i>
+                Dashboard
+            </button>
+
+            <button onclick="showSection('owners-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="users"></i>
+                Owners
+            </button>
+
+            <button onclick="showSection('parking-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="car"></i>
+                Parking Lots
+            </button>
+
+            <button onclick="showSection('bookings-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="calendar-check"></i>
+                Bookings
+            </button>
+
+            <button onclick="showSection('verification-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="badge-check"></i>
+                Verification
+            </button>
+
+            <button onclick="showSection('setting-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="settings"></i>
+                Settings
+            </button>
+
+        </nav>
+
+        <div class="p-5 border-t border-slate-800">
+            <a href="{% url 'logout' %}"
+               class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 py-3 rounded-xl transition">
+                <i data-lucide="log-out"></i>
+                Logout
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 lg:ml-72">
+
+        <!-- Header -->
+        <header class="sticky top-0 z-30 bg-white border-b px-6 py-4">
+            <div class="flex justify-between items-center">
+
+                <div class="flex items-center gap-4">
+
+                    <button id="menuBtn"
+                        class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">
+                        ☰
+                    </button>
+
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-800">
+                            Admin Dashboard
+                        </h2>
+                        <p class="text-slate-500">
+                            Welcome back, {{ admin.first_name }}
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="flex items-center gap-4">
+
+                    <button class="bg-slate-100 p-3 rounded-full hover:bg-slate-200 transition">
+                        <i data-lucide="bell"></i>
+                    </button>
+
+                    <div class="relative group">
+
+                        <button class="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2 hover:bg-slate-200 transition">
+
+                            <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">
+                                {{ admin.first_name|slice:":1" }}
+                            </div>
+
+                            <div class="hidden md:block text-left">
+                                <h4 class="font-semibold">
+                                    {{ admin.first_name }} {{ admin.last_name }}
+                                </h4>
+                                <p class="text-sm text-slate-500">
+                                    Administrator
+                                </p>
+                            </div>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </header>
+
+        <main class="p-6 space-y-8">
+
+            <!-- Dashboard -->
+            <section id="dashboard-section">
+
+                <!-- Welcome -->
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg">
+                    <h1 class="text-4xl font-bold">
+                        Welcome back {{ admin.first_name }} 👋
+                    </h1>
+                    <p class="mt-3 text-emerald-100">
+                        Monitor owners, parking lots and approvals from one place.
+                    </p>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">Owners</p>
+                                <h2 class="text-4xl font-bold mt-2">
+                                    {{ owners|length }}
+                                </h2>
+                            </div>
+                            <div class="bg-blue-100 p-4 rounded-2xl">
+                                <i data-lucide="users" class="text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">Parking Lots</p>
+                                <h2 class="text-4xl font-bold mt-2">
+                                    {{ parking_lots|length }}
+                                </h2>
+                            </div>
+                            <div class="bg-emerald-100 p-4 rounded-2xl">
+                                <i data-lucide="car" class="text-emerald-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">Pending Owners</p>
+                                <h2 class="text-4xl font-bold mt-2">
+                                    {{ pending_owners|length }}
+                                </h2>
+                            </div>
+                            <div class="bg-yellow-100 p-4 rounded-2xl">
+                                <i data-lucide="clock-3" class="text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">System Status</p>
+                                <h2 class="text-2xl font-bold mt-3 text-green-600">
+                                    Online
+                                </h2>
+                            </div>
+                            <div class="bg-green-100 p-4 rounded-2xl">
+                                <i data-lucide="activity" class="text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">Total Revenue</p>
+                                <h2 class="text-3xl font-bold mt-2 text-emerald-600">
+                                    Rs {{ total_revenue }}
+                                </h2>
+                            </div>
+                            <div class="bg-emerald-100 p-4 rounded-2xl">
+                                <i data-lucide="banknote" class="text-emerald-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-slate-500">Active Bookings</p>
+                                <h2 class="text-4xl font-bold mt-2 text-blue-600">
+                                    {{ active_bookings_count }}
+                                </h2>
+                            </div>
+                            <div class="bg-blue-100 p-4 rounded-2xl">
+                                <i data-lucide="calendar-check" class="text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Owners -->
+            <section id="owners-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-6">
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">
+                            Registered Owners
+                        </h2>
+
+                        <span class="bg-slate-100 px-4 py-2 rounded-xl">
+                            {{ owners|length }} Owners
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full">
+
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="text-left p-4">Owner</th>
+                                    <th class="text-left p-4">Company</th>
+                                    <th class="text-left p-4">Phone</th>
+                                    <th class="text-left p-4">Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for owner in owners %}
+                                <tr class="border-b hover:bg-slate-50 transition">
+
+                                    <td class="p-4 font-medium">
+                                        {{ owner.full_name }}
+                                    </td>
+
+                                    <td class="p-4">
+                                        {{ owner.company_name }}
+                                    </td>
+
+                                    <td class="p-4">
+                                        {{ owner.phone }}
+                                    </td>
+
+                                    <td class="p-4">
+                                        {% if owner.is_verified %}
+                                        <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm">
+                                            Verified
+                                        </span>
+                                        {% else %}
+                                        <span class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm">
+                                            Pending
+                                        </span>
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-10 text-slate-500">
+                                        No owners registered.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Parking -->
+            <section id="parking-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-6">
+
+                    <h2 class="text-2xl font-bold mb-6">
+                        Parking Lots
+                    </h2>
+
+                    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                        {% for parking in parking_lots %}
+
+                        <div class="border rounded-2xl p-6 hover:shadow-xl transition">
+
+                            <h3 class="text-xl font-bold">
+                                {{ parking.parking_name }}
+                            </h3>
+
+                            <p class="text-slate-500 mt-2">
+                                {{ parking.location }}
+                            </p>
+
+                            <div class="mt-5 space-y-2 text-sm">
+
+                                <div class="flex justify-between">
+                                    <span>Owner</span>
+                                    <span>{{ parking.owner.full_name }}</span>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <span>Cars</span>
+                                    <span>{{ parking.car_capacity }}</span>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <span>Bikes</span>
+                                    <span>{{ parking.bike_capacity }}</span>
+                                </div>
+
+                                <div class="flex justify-between">
+                                    <span>Rate</span>
+                                    <span>Rs {{ parking.rate_per_hour }}/hr</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pt-1">
+                                    <span>Status</span>
+                                    {% if parking.is_active %}
+                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Active</span>
+                                    {% else %}
+                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Inactive</span>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                            <div class="flex gap-2 mt-5">
+
+                                <form method="POST" action="{% url 'admin_toggle_parking' parking.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full {% if parking.is_active %}bg-amber-500 hover:bg-amber-600{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white py-2 rounded-xl text-sm">
+                                        {% if parking.is_active %}Deactivate{% else %}Activate{% endif %}
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{% url 'admin_delete_parking' parking.id %}" class="flex-1"
+                                      onsubmit="return confirm('Permanently delete this parking lot?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl text-sm">
+                                        Delete
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                        {% empty %}
+                        <div class="col-span-full text-center py-16 text-slate-500">
+                            No parking lots available.
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Bookings -->
+            <section id="bookings-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-6">
+
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+                        <h2 class="text-2xl font-bold">
+                            All Bookings
+                        </h2>
+
+                        <form method="GET" class="flex items-center gap-2">
+                            <input type="hidden" name="section" value="bookings-section">
+                            <select name="status" onchange="this.form.submit()"
+                                    class="border rounded-xl px-4 py-2">
+                                <option value="">All Statuses</option>
+                                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full min-w-[1100px]">
+
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="text-left p-4">ID</th>
+                                    <th class="text-left p-4">User</th>
+                                    <th class="text-left p-4">Parking Lot</th>
+                                    <th class="text-left p-4">Vehicle</th>
+                                    <th class="text-left p-4">Date</th>
+                                    <th class="text-left p-4">Amount</th>
+                                    <th class="text-left p-4">Payment</th>
+                                    <th class="text-left p-4">Status</th>
+                                    <th class="text-left p-4">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for booking in bookings %}
+                                <tr class="border-b hover:bg-slate-50 transition">
+
+                                    <td class="p-4">#{{ booking.id }}</td>
+
+                                    <td class="p-4">{{ booking.user.username }}</td>
+
+                                    <td class="p-4 font-medium">{{ booking.parking_name }}</td>
+
+                                    <td class="p-4">{{ booking.vehicle_number }} ({{ booking.vehicle_type }})</td>
+
+                                    <td class="p-4">{{ booking.booking_date }}</td>
+
+                                    <td class="p-4">Rs {{ booking.amount }}</td>
+
+                                    <td class="p-4">
+                                        {% if booking.payment_status == 'Paid' %}
+                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Paid</span>
+                                        {% else %}
+                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Unpaid</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="p-4">
+                                        {% if booking.status == 'Completed' %}
+                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Completed</span>
+                                        {% elif booking.status == 'Active' %}
+                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">Active</span>
+                                        {% elif booking.status == 'Cancelled' %}
+                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Cancelled</span>
+                                        {% else %}
+                                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Pending</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="p-4">
+                                        <form method="POST" action="{% url 'admin_update_booking' booking.id %}" class="flex gap-2">
+                                            {% csrf_token %}
+                                            <select name="status" class="border rounded-lg px-2 py-1.5 text-sm">
+                                                <option value="Pending" {% if booking.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                <option value="Active" {% if booking.status == 'Active' %}selected{% endif %}>Active</option>
+                                                <option value="Completed" {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                <option value="Cancelled" {% if booking.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                            </select>
+                                            <button type="submit" class="bg-slate-900 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm">
+                                                Update
+                                            </button>
+                                        </form>
+                                    </td>
+
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-10 text-slate-500">
+                                        No bookings found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Verification -->
+            <section id="verification-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-6">
+
+                    <h2 class="text-2xl font-bold mb-6">
+                        Pending Owner Verification
+                    </h2>
+
+                    <div class="space-y-5">
+
+                        {% for owner in pending_owners %}
+
+                        <div class="border rounded-2xl p-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 hover:shadow-lg transition">
+
+                            <div>
+                                <h3 class="text-xl font-bold">
+                                    {{ owner.full_name }}
+                                </h3>
+
+                                <p class="text-slate-500 mt-2">
+                                    {{ owner.company_name }}
+                                </p>
+
+                                <p class="text-slate-500">
+                                    {{ owner.phone }}
+                                </p>
+                            </div>
+
+                            <div class="flex gap-3">
+
+                                <a href="{% url 'approve_owner' owner.id %}"
+                                   class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl">
+                                    Approve
+                                </a>
+
+                                <a href="{% url 'reject_owner' owner.id %}"
+                                   class="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl">
+                                    Reject
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        {% empty %}
+
+                        <div class="text-center py-16">
+                            <i data-lucide="badge-check" class="mx-auto w-20 h-20 text-green-400"></i>
+                            <h3 class="text-2xl font-bold mt-4">
+                                All Owners Verified
+                            </h3>
+                            <p class="text-slate-500 mt-2">
+                                No pending verification requests.
+                            </p>
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Settings -->
+            <section id="setting-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-6">
+
+                    <h2 class="text-2xl font-bold mb-6">
+                        Settings
+                    </h2>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+
+                        <div class="border rounded-2xl p-6">
+                            <h3 class="font-bold text-lg">
+                                Admin Account
+                            </h3>
+
+                            <p class="mt-4 text-slate-600">
+                                Username :
+                                <strong>{{ admin.username }}</strong>
+                            </p>
+
+                            <p class="text-slate-600">
+                                Email :
+                                <strong>{{ admin.email }}</strong>
+                            </p>
+                        </div>
+
+                        <div class="border rounded-2xl p-6">
+                            <h3 class="font-bold text-lg">
+                                System Status
+                            </h3>
+
+                            <p class="text-green-600 mt-4">
+                                ✔ Parkify Running Normally
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+
+<script>
+
+lucide.createIcons();
+
+function showSection(section){
+
+    const sections=[
+        'dashboard-section',
+        'owners-section',
+        'parking-section',
+        'bookings-section',
+        'verification-section',
+        'setting-section'
+    ];
+
+    sections.forEach(function(id){
+        document.getElementById(id).classList.add('hidden');
+    });
+
+    document.getElementById(section).classList.remove('hidden');
+}
+
+{% if status_filter %}
+showSection('bookings-section');
+{% endif %}
+
+
+const menuBtn=document.getElementById('menuBtn');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+
+menuBtn.addEventListener('click',()=>{
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+});
+
+overlay.addEventListener('click',()=>{
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+});
+
+</script>
+
+</body>
+</html>

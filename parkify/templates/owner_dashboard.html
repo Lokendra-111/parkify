@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkify Owner Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+</head>
+
+<body class="bg-slate-100">
+
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+
+    <aside class="w-72 bg-slate-900 text-white flex flex-col">
+
+        <div class="p-6 border-b border-slate-700">
+
+            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+            <p class="text-slate-400">Owner Panel</p>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+
+            <button onclick="showSection('dashboard-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500">
+                <i data-lucide="layout-dashboard"></i>
+                Dashboard
+            </button>
+            <button onclick="showSection('profile-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="user-circle"></i>
+                Profile
+            </button>
+            <button onclick="showSection('document-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="file-text"></i>
+                Documents
+            </button>
+            <button onclick="showSection('add-parking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="plus-circle"></i>
+                Add Parking
+            </button>
+            <button onclick="showSection('parking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="map-pinned"></i>
+                Parking Lots
+            </button>
+            <button onclick="showSection('booking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="calendar-check"></i>
+                Bookings
+            </button>
+            <button onclick="showSection('notification-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+                <i data-lucide="bell"></i>
+                Notifications
+            </button>
+
+            <button onclick="showSection('setting-section')"class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="settings"></i>Settings
+            </button>
+        </nav>
+
+        <div class="p-5">
+
+            <a href="{% url 'logout' %}" class="flex justify-center items-center gap-2 bg-red-500 py-3 rounded-xl hover:bg-red-600">
+                <i data-lucide="log-out"></i>
+                Logout
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- Content -->
+
+    <main class="flex-1 p-8">
+        <!-- Dashboard -->
+<section id="dashboard-section" class="page-section space-y-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-4xl font-bold">Welcome {{ owner.first_name }} 👋</h1>
+            <p class="text-slate-500 mt-2">Here's what's happening with your parking business today.</p>
+        </div>
+
+        <div>
+            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full">{{ verification_status }}</span>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <!-- Parking -->
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <p class="text-slate-500">
+
+                        Parking Lots
+
+                    </p>
+
+                    <h2 class="text-4xl font-bold mt-2">
+
+                        {{ parkings.count }}
+
+                    </h2>
+
+                </div>
+
+                <div class="bg-emerald-100 p-4 rounded-xl">
+
+                    <i data-lucide="map-pinned" class="text-emerald-600"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Bookings -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <p class="text-slate-500">
+
+                        Bookings
+
+                    </p>
+
+                    <h2 class="text-4xl font-bold mt-2">
+
+                        {{ bookings.count }}
+
+                    </h2>
+
+                </div>
+
+                <div class="bg-blue-100 p-4 rounded-xl">
+
+                    <i data-lucide="calendar-check" class="text-blue-600"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Earnings -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <p class="text-slate-500">
+
+                        Monthly Earnings
+
+                    </p>
+
+                    <h2 class="text-4xl font-bold mt-2 text-green-600">
+
+                        Rs {{ monthly_earnings }}
+
+                    </h2>
+
+                </div>
+
+                <div class="bg-green-100 p-4 rounded-xl">
+
+                    <i data-lucide="wallet" class="text-green-600"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Occupancy -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <p class="text-slate-500">
+
+                        Occupancy
+
+                    </p>
+
+                    <h2 class="text-4xl font-bold mt-2">
+
+                        {{ occupancy }}%
+
+                    </h2>
+
+                </div>
+
+                <div class="bg-orange-100 p-4 rounded-xl">
+
+                    <i data-lucide="activity" class="text-orange-600"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Quick Actions -->
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+        <button onclick="showSection('add-parking-section')"
+
+        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-emerald-500 hover:text-white transition">
+
+            <i data-lucide="plus-circle" class="w-10 h-10 mb-5"></i>
+
+            <h3 class="text-xl font-bold">
+
+                Add Parking
+
+            </h3>
+
+            <p class="mt-2">
+
+                Register a new parking lot.
+
+            </p>
+
+        </button>
+
+
+
+        <button onclick="showSection('parking-section')"
+
+        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-blue-500 hover:text-white transition">
+
+            <i data-lucide="car-front" class="w-10 h-10 mb-5"></i>
+            <h3 class="text-xl font-bold">
+
+                Parking Lots
+
+            </h3>
+
+            <p class="mt-2">
+
+                View all parking lots.
+
+            </p>
+
+        </button>
+
+
+
+        <button onclick="showSection('booking-section')"
+
+        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-purple-500 hover:text-white transition">
+
+            <i data-lucide="calendar-days" class="w-10 h-10 mb-5"></i>
+
+            <h3 class="text-xl font-bold">
+
+                Bookings
+
+            </h3>
+
+            <p class="mt-2">
+
+                View booking history.
+
+            </p>
+
+        </button>
+
+    </div>
+
+
+
+    <!-- Dashboard Bottom -->
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+        <!-- Latest Parking -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between">
+
+                <h2 class="text-2xl font-bold">
+
+                    Latest Parking Lots
+
+                </h2>
+
+                <button
+
+                onclick="showSection('parking-section')"
+
+                class="text-emerald-600">
+
+                    View All
+
+                </button>
+
+            </div>
+
+            <div class="mt-6 space-y-4">
+
+                {% for parking in parkings|slice:":3" %}
+
+                <div class="border rounded-xl p-4">
+
+                    <h3 class="font-bold">
+
+                        {{ parking.parking_name }}
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        {{ parking.location }}
+
+                    </p>
+
+                </div>
+
+                {% empty %}
+
+                <p class="text-slate-400">
+
+                    No parking lots available.
+
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Latest Bookings -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between">
+
+                <h2 class="text-2xl font-bold">
+
+                    Recent Bookings
+
+                </h2>
+
+                <button
+
+                onclick="showSection('booking-section')"
+
+                class="text-blue-600">
+
+                    View All
+
+                </button>
+
+            </div>
+
+            <div class="mt-6 space-y-4">
+
+                {% for booking in bookings|slice:":5" %}
+
+                <div class="border rounded-xl p-4 flex justify-between">
+
+                    <div>
+
+                        <h3 class="font-semibold">
+
+                            {{ booking.vehicle_number }}
+
+                        </h3>
+
+                        <p class="text-slate-500">
+
+                            {{ booking.parking_name }}
+
+                        </p>
+
+                    </div>
+
+                    <div class="text-green-600 font-bold">
+
+                        Rs {{ booking.amount }}
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <p class="text-slate-400">
+
+                    No bookings available.
+
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- Profile -->
+
+
+<section id="profile-section" class="page-section hidden">
+
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+
+                My Profile
+
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+
+                Manage your account information.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST"
+          action="{% url 'owner_profile' %}"
+          enctype="multipart/form-data"
+          class="space-y-8">
+
+        {% csrf_token %}
+
+        <!-- Profile Card -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+
+                <div class="text-center">
+
+                    {% if owner.profile_image %}
+
+                    <img src="{{ owner.profile_image.url }}"
+                         class="w-40 h-40 rounded-full object-cover border-4 border-emerald-500">
+
+                    {% else %}
+
+                    <div class="w-40 h-40 rounded-full bg-emerald-500 flex items-center justify-center text-white text-5xl font-bold">
+
+                        {{ owner.first_name|slice:":1" }}
+
+                    </div>
+
+                    {% endif %}
+
+                    <input
+                        type="file"
+                        name="profile_image"
+                        class="mt-5">
+
+                </div>
+
+                <div class="flex-1 grid md:grid-cols-2 gap-6">
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            First Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="first_name"
+                            value="{{ owner.first_name }}"
+                            class="w-full border rounded-xl p-3">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            Last Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="last_name"
+                            value="{{ owner.last_name }}"
+                            class="w-full border rounded-xl p-3">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            Username
+
+                        </label>
+
+                        <input
+                            type="text"
+                            value="{{ owner.username }}"
+                            readonly
+                            class="w-full border rounded-xl p-3 bg-slate-100">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            Email
+
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ owner.email }}"
+                            class="w-full border rounded-xl p-3">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            Phone
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="phone"
+                            value="{{ owner.phone }}"
+                            class="w-full border rounded-xl p-3">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 font-semibold">
+
+                            Verification
+
+                        </label>
+
+                        <input
+                            type="text"
+                            readonly
+                            value="{{ verification_status }}"
+                            class="w-full border rounded-xl p-3 bg-slate-100">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Address -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Address
+
+            </h2>
+
+            <textarea
+                rows="4"
+                name="address"
+                class="w-full border rounded-xl p-4">{{ owner.address }}</textarea>
+
+        </div>
+
+
+        <!-- Password -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">Change Password</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <input type="password"name="old_password"placeholder="Current Password"class="border rounded-xl p-3">
+
+                <input type="password"name="new_password"placeholder="New Password"class="border rounded-xl p-3">
+
+                <input type="password"name="confirm_password"placeholder="Confirm Password"class="border rounded-xl p-3">
+            </div>
+
+        </div>
+
+
+        <!-- Save -->
+
+        <div class="flex justify-end">
+
+            <button type="submit"class="bg-emerald-500 text-white px-8 py-3 rounded-xl hover:bg-emerald-600">
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+        <!-- Documents -->
+
+<section id="document-section" class="page-section hidden">
+
+    <!-- Header -->
+
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+
+                Verification Documents
+
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+
+                Upload all required documents for account verification.
+
+            </p>
+
+        </div>
+
+        <div>
+
+            <span class="px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+
+                {{ verification_status }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST"
+          action="{% url 'owner_document' %}"
+          enctype="multipart/form-data"
+          class="space-y-8">
+
+        {% csrf_token %}
+
+        <!-- Citizenship -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <div>
+
+                    <h2 class="text-2xl font-bold">
+
+                        Citizenship Certificate
+
+                    </h2>
+
+                    <p class="text-slate-500">
+
+                        Upload front and back images.
+
+                    </p>
+
+                </div>
+
+                {% if owner.citizenship %}
+
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full">
+
+                    Uploaded
+
+                </span>
+
+                {% else %}
+
+                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full">
+
+                    Not Uploaded
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <input
+                type="file"
+                name="citizenship"
+                accept=".jpg,.jpeg,.png,.pdf"
+                class="w-full border rounded-xl p-4">
+
+        </div>
+
+
+        <!-- PAN -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <div>
+
+                    <h2 class="text-2xl font-bold">
+
+                        PAN Card
+
+                    </h2>
+
+                    <p class="text-slate-500">
+
+                        Upload your PAN document.
+
+                    </p>
+
+                </div>
+
+                {% if owner.pan_document %}
+
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full">
+
+                    Uploaded
+
+                </span>
+
+                {% else %}
+
+                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full">
+
+                    Not Uploaded
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <input
+                type="file"
+                name="pan_document"
+                accept=".jpg,.jpeg,.png,.pdf"
+                class="w-full border rounded-xl p-4">
+
+        </div>
+
+
+        <!-- Business Registration -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <div>
+
+                    <h2 class="text-2xl font-bold">
+
+                        Business Registration
+
+                    </h2>
+
+                    <p class="text-slate-500">
+
+                        Upload your business registration certificate.
+
+                    </p>
+
+                </div>
+
+                {% if owner.business_registration %}
+
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full">
+
+                    Uploaded
+
+                </span>
+
+                {% else %}
+
+                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full">
+
+                    Not Uploaded
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <input
+                type="file"
+                name="business_registration"
+                accept=".jpg,.jpeg,.png,.pdf"
+                class="w-full border rounded-xl p-4">
+
+        </div>
+
+
+        <!-- Parking License -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <div>
+
+                    <h2 class="text-2xl font-bold">
+
+                        Parking License
+
+                    </h2>
+
+                    <p class="text-slate-500">
+
+                        Upload your parking license.
+
+                    </p>
+
+                </div>
+
+                {% if owner.parking_license %}
+
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full">
+
+                    Uploaded
+
+                </span>
+
+                {% else %}
+
+                <span class="bg-red-100 text-red-700 px-4 py-2 rounded-full">
+
+                    Not Uploaded
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <input
+                type="file"
+                name="parking_license"
+                accept=".jpg,.jpeg,.png,.pdf"
+                class="w-full border rounded-xl p-4">
+
+        </div>
+
+
+        <!-- Bank Account -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Bank Details
+
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Bank Name
+
+                    </label>
+
+                    <input
+                        type="text"
+                        name="bank_name"
+                        value="{{ owner.bank_name }}"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Account Number
+
+                    </label>
+
+                    <input
+                        type="text"
+                        name="account_number"
+                        value="{{ owner.account_number }}"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Submit -->
+
+        <div class="flex justify-end">
+
+            <button
+                type="submit"
+                class="bg-emerald-500 hover:bg-emerald-600 text-white px-10 py-3 rounded-xl">
+
+                Upload Documents
+
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+        <!-- Add Parking -->
+
+        <section id="add-parking-section" class="page-section hidden">
+
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+                Add Parking Lot
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Register a new parking space for customers.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST"
+          action="{% url 'add_parking' %}"
+          enctype="multipart/form-data"
+          class="space-y-8">
+
+        {% csrf_token %}
+
+        <!-- Basic Information -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">
+                Basic Information
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+                        Parking Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="parking_name"
+                        required
+                        class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-emerald-500">
+
+                </div>
+
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+                        Contact Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="contact"
+                        required
+                        class="w-full border rounded-xl p-3 focus:ring-2 focus:ring-emerald-500">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Address -->
+
+  <!-- Location -->
+
+<div class="bg-white rounded-2xl shadow p-8">
+
+    <h2 class="text-2xl font-bold mb-6">
+        Parking Location
+    </h2>
+
+    <div class="space-y-6">
+
+        <div>
+
+            <label class="block mb-2 font-semibold">
+                Selected Location
+            </label>
+
+            <input
+                type="text"
+                id="location"
+                name="location"
+                readonly
+                placeholder="Click on map to select location"
+                class="w-full border rounded-xl p-3 bg-slate-100">
+
+        </div>
+
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+
+        <div
+            id="ownerMap"
+            class="w-full h-96 rounded-2xl border overflow-hidden">
+        </div>
+
+        <p class="text-sm text-slate-500">
+            Click anywhere on the map to set your parking location.
+        </p>
+
+    </div>
+
+</div>
+
+
+        <!-- Capacity -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">
+                Capacity
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-6">
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Car Capacity
+
+                    </label>
+
+                    <input
+                        type="number"
+                        name="car_capacity"
+                        min="0"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Bike Capacity
+
+                    </label>
+
+                    <input
+                        type="number"
+                        name="bike_capacity"
+                        min="0"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        EV Capacity
+
+                    </label>
+
+                    <input
+                        type="number"
+                        name="ev_capacity"
+                        min="0"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pricing -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Pricing
+
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Rate Per Hour (Rs)
+
+                    </label>
+
+                    <input
+                        type="number"
+                        name="rate_per_hour"
+                        min="0"
+                        required
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Opening Time
+
+                    </label>
+
+                    <input
+                        type="time"
+                        name="opening_time"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+                <div>
+
+                    <label class="block mb-2 font-semibold">
+
+                        Closing Time
+
+                    </label>
+
+                    <input
+                        type="time"
+                        name="closing_time"
+                        class="w-full border rounded-xl p-3">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Description -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">Description</h2>
+
+            <textarea
+                rows="5"
+                name="description"
+                placeholder="Describe your parking area..."
+                class="w-full border rounded-xl p-3"></textarea>
+
+        </div>
+
+
+        <!-- Upload Image -->
+
+        <div class="bg-white rounded-2xl shadow p-8">
+
+            <h2 class="text-2xl font-bold mb-6">Parking Image</h2>
+            <input type="file"name="parking_image"accept="image/*"class="w-full border rounded-xl p-3">
+
+        </div>
+
+
+        <!-- Buttons -->
+
+        <div class="flex justify-end gap-4">
+
+            <button
+                type="reset"
+                class="px-8 py-3 rounded-xl bg-slate-200 hover:bg-slate-300">
+
+                Reset
+
+            </button>
+
+            <button
+                type="submit"
+                class="px-8 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600">
+
+                Save Parking Lot
+
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+        <!-- Parking -->
+
+
+<section id="parking-section" class="page-section hidden">
+
+    <!-- Header -->
+
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+
+        <div>
+            <h1 class="text-4xl font-bold">My Parking Lots</h1>
+            <p class="text-slate-500 mt-2">Manage all your registered parking spaces.</p>
+        </div>
+
+        <button
+            onclick="showSection('add-parking-section')"
+            class="bg-emerald-500 text-white px-6 py-3 rounded-xl hover:bg-emerald-600">
+            + Add Parking
+        </button>
+
+    </div>
+
+
+    <!-- Search -->
+
+    <div class="bg-white rounded-2xl shadow p-6 mb-8">
+        <inputtype="text"id="parkingSearch"placeholder="Search parking lot..."class="w-full border rounded-xl p-3">
+    </div>
+
+
+    <!-- Cards -->
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        {% for parking in parkings %}
+
+        <div class="parking-card bg-white rounded-2xl shadow hover:shadow-xl transition">
+
+            <!-- Image -->
+
+            {% if parking.parking_image %}
+    <img src="{{ parking.parking_image.url }}"class="w-full h-56 object-cover rounded-t-3xl">
+            {% endif %}
+
+            <div class="p-6">
+
+                <!-- Title -->
+
+                <div class="flex justify-between">
+
+                    <h2 class="text-2xl font-bold">{{ parking.parking_name }}</h2>
+
+                    {% if parking.is_active %}
+
+                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Active</span>
+
+                    {% else %}
+
+                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">Closed</span>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Address -->
+
+                <p class="text-slate-500 mt-3">{{ parking.location }}</p>
+
+                <!-- Capacity -->
+
+                <div class="grid grid-cols-2 gap-4 mt-6">
+
+                    <div class="bg-slate-100 rounded-xl p-4 text-center">
+
+                        <p class="text-slate-500">Cars</p>
+                        <h3 class="text-2xl font-bold">{{ parking.car_capacity }}</h3>
+
+                    </div>
+
+                    <div class="bg-slate-100 rounded-xl p-4 text-center">
+
+                        <p class="text-slate-500">Bikes</p>
+
+                        <h3 class="text-2xl font-bold">
+
+                            {{ parking.bike_capacity }}
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <!-- Price -->
+
+                <div class="mt-6">
+
+                    <p class="text-green-600 text-3xl font-bold">
+
+                        Rs {{ parking.rate_per_hour }}
+
+                        <span class="text-base text-slate-500">
+
+                            /hour
+
+                        </span>
+
+                    </p>
+
+                </div>
+
+                <!-- Buttons -->
+
+                <div class="grid grid-cols-3 gap-3 mt-8">
+
+                    <a href="{% url 'view_parking' parking.id %}" class="bg-blue-500 text-white py-2 rounded-xl hover:bg-blue-600 text-center">View</a>
+                    <a href="{% url 'edit_parking' parking.id %}" class="bg-yellow-500 text-white py-2 rounded-xl hover:bg-yellow-600 text-center">Edit</a>
+                    <a href="{% url 'delete_parking' parking.id %}" onclick="return confirm('Delete this parking lot?')" 
+                    class="bg-red-500 text-white py-2 rounded-xl hover:bg-red-600 text-center">Delete</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-span-full">
+
+            <div class="bg-white rounded-2xl shadow p-20 text-center">
+
+                <i
+                    data-lucide="map-pinned"
+                    class="mx-auto w-20 h-20 text-slate-300">
+
+                </i>
+
+                <h2 class="text-3xl font-bold mt-6">
+
+                    No Parking Lots
+
+                </h2>
+
+                <p class="text-slate-500 mt-3">
+
+                    Start by adding your first parking lot.
+
+                </p>
+
+                <button
+                    onclick="showSection('add-parking-section')"
+                    class="mt-8 bg-emerald-500 text-white px-8 py-3 rounded-xl hover:bg-emerald-600">
+
+                    Add Parking
+
+                </button>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+<!-- Bookings Section -->
+<section id="booking-section" class="page-section hidden">
+
+    <!-- Header -->
+
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+
+                Booking Management
+
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+
+                View and manage all parking bookings.
+
+            </p>
+
+        </div>
+
+        <div class="flex gap-3">
+
+            <input
+                id="bookingSearch"
+                type="text"
+                placeholder="Search booking..."
+                class="border rounded-xl px-4 py-3 w-72">
+
+        </div>
+
+    </div>
+
+
+    <!-- Booking Table -->
+
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full">
+
+                <thead class="bg-slate-100">
+
+                    <tr>
+
+                        <th class="text-left p-4">Booking ID</th>
+
+                        <th class="text-left p-4">Customer</th>
+
+                        <th class="text-left p-4">Vehicle</th>
+
+                        <th class="text-left p-4">Parking Lot</th>
+
+                        <th class="text-left p-4">Amount</th>
+
+                        <th class="text-left p-4">Payment</th>
+
+                        <th class="text-left p-4">Status</th>
+
+                        <th class="text-center p-4">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for booking in bookings %}
+
+                    <tr class="booking-row border-b hover:bg-slate-50">
+
+                        <td class="p-4">
+
+                            #{{ booking.id }}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            {{ booking.user.username }}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            {{ booking.vehicle_number }}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            {{ booking.parking_name }}
+
+                        </td>
+
+                        <td class="p-4 text-green-600 font-semibold">
+
+                            Rs {{ booking.amount }}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            {% if booking.payment_status == "Paid" %}
+
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+
+                                    Paid
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+
+                                    Pending
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            {% if booking.status == "Completed" %}
+
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+
+                                    Completed
+
+                                </span>
+
+                            {% elif booking.status == "Active" %}
+
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+
+                                    Active
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+
+                                    Cancelled
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="p-4">
+
+                            <div class="flex justify-center gap-2">
+
+                                <button
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+
+                                    View
+
+                                </button>
+
+                                <button
+                                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+
+                                    Delete
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="8" class="text-center py-16">
+
+                            <i data-lucide="calendar-x"
+                               class="mx-auto w-16 h-16 text-slate-300"></i>
+
+                            <h2 class="text-2xl font-bold mt-5">
+
+                                No Bookings Yet
+
+                            </h2>
+
+                            <p class="text-slate-500 mt-2">
+
+                                Bookings will appear here once customers reserve parking.
+
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Reports & Analytics Section -->
+
+<section id="report-section" class="page-section hidden">
+
+    <!-- Header -->
+
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+
+                Reports & Analytics
+
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+
+                Monitor your parking business performance.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Statistics Cards -->
+
+    <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+
+        <!-- Daily -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <p class="text-slate-500">
+
+                Today's Earnings
+
+            </p>
+
+            <h2 class="text-4xl font-bold text-green-600 mt-3">
+
+                Rs {{ today_earnings|default:"0" }}
+
+            </h2>
+
+        </div>
+
+        <!-- Weekly -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <p class="text-slate-500">
+
+                Weekly Earnings
+
+            </p>
+
+            <h2 class="text-4xl font-bold text-blue-600 mt-3">
+
+                Rs {{ weekly_earnings|default:"0" }}
+
+            </h2>
+
+        </div>
+
+        <!-- Monthly -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <p class="text-slate-500">
+
+                Monthly Earnings
+
+            </p>
+
+            <h2 class="text-4xl font-bold text-purple-600 mt-3">
+
+                Rs {{ monthly_earnings|default:"0" }}
+
+            </h2>
+
+        </div>
+
+        <!-- Total -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <p class="text-slate-500">
+
+                Total Earnings
+
+            </p>
+
+            <h2 class="text-4xl font-bold text-orange-600 mt-3">
+
+                Rs {{ total_earnings|default:"0" }}
+
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <!-- Summary -->
+
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Parking Summary
+
+            </h2>
+
+            <div class="space-y-5">
+
+                <div class="flex justify-between">
+
+                    <span>Total Parking Lots</span>
+
+                    <strong>{{ parkings.count }}</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Total Bookings</span>
+
+                    <strong>{{ bookings.count }}</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Occupancy Rate</span>
+
+                    <strong>{{ occupancy }}%</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Average Rating</span>
+
+                    <strong>⭐ {{ average_rating|default:"0.0" }}/5</strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Booking Statistics
+
+            </h2>
+
+            <div class="space-y-5">
+
+                <div class="flex justify-between">
+
+                    <span>Completed</span>
+
+                    <strong>{{ completed_bookings|default:"0" }}</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Active</span>
+
+                    <strong>{{ active_bookings|default:"0" }}</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Cancelled</span>
+
+                    <strong>{{ cancelled_bookings|default:"0" }}</strong>
+
+                </div>
+
+                <div class="flex justify-between">
+
+                    <span>Pending Payments</span>
+
+                    <strong>{{ pending_payments|default:"0" }}</strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Charts -->
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+        <!-- Earnings Chart -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Monthly Earnings
+
+            </h2>
+
+            <canvas id="earningsChart" height="250"></canvas>
+
+        </div>
+
+        <!-- Occupancy Chart -->
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <h2 class="text-2xl font-bold mb-6">
+
+                Occupancy
+
+            </h2>
+
+            <canvas id="occupancyChart" height="250"></canvas>
+
+        </div>
+
+    </div>
+
+</section>
+
+        <!-- Notification -->
+
+
+<section id="notification-section" class="page-section hidden">
+
+    <!-- Header -->
+
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-4xl font-bold">
+
+                Notifications
+
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+
+                Stay updated with your parking business activities.
+
+            </p>
+
+        </div>
+
+        <button
+            id="clearNotifications"
+            class="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl">
+
+            Clear All
+
+        </button>
+
+    </div>
+
+
+    <!-- Notification List -->
+
+    <div id="notificationContainer" class="space-y-6">
+
+
+        <!-- Booking -->
+
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-blue-500">
+
+            <div class="flex justify-between">
+
+                <div>
+
+                    <h2 class="font-bold text-xl">
+
+                        🚗 New Booking Received
+
+                    </h2>
+
+                    <p class="text-slate-500 mt-2">
+
+                        Vehicle BA 12 PA 1234 booked your parking.
+
+                    </p>
+
+                    <small class="text-slate-400">
+
+                        2 minutes ago
+
+                    </small>
+
+                </div>
+
+                <button class="markRead text-blue-600 font-semibold">
+
+                    Mark Read
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Payment -->
+
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-green-500">
+
+            <div class="flex justify-between">
+
+                <div>
+
+                    <h2 class="font-bold text-xl">
+
+                        💰 Payment Received
+
+                    </h2>
+
+                    <p class="text-slate-500 mt-2">
+
+                        Rs {{ monthly_earnings }} has been received.
+
+                    </p>
+
+                    <small class="text-slate-400">
+
+                        Today
+
+                    </small>
+
+                </div>
+
+                <button class="markRead text-green-600 font-semibold">
+
+                    Mark Read
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Verification -->
+
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-yellow-500">
+
+            <div class="flex justify-between">
+
+                <div>
+
+                    <h2 class="font-bold text-xl">
+
+                        📄 Verification Status
+
+                    </h2>
+
+                    <p class="text-slate-500 mt-2">
+
+                        Current Status:
+
+                        <strong>
+
+                            {{ verification_status }}
+
+                        </strong>
+
+                    </p>
+
+                    <small class="text-slate-400">
+
+                        Yesterday
+
+                    </small>
+
+                </div>
+
+                <button class="markRead text-yellow-600 font-semibold">
+
+                    Mark Read
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Booking Completed -->
+
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-purple-500">
+
+            <div class="flex justify-between">
+
+                <div>
+
+                    <h2 class="font-bold text-xl">
+
+                        ✅ Booking Completed
+
+                    </h2>
+
+                    <p class="text-slate-500 mt-2">
+
+                        Parking session completed successfully.
+
+                    </p>
+
+                    <small class="text-slate-400">
+
+                        1 day ago
+
+                    </small>
+
+                </div>
+
+                <button class="markRead text-purple-600 font-semibold">
+
+                    Mark Read
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Approval -->
+
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-emerald-500">
+
+            <div class="flex justify-between">
+
+                <div>
+
+                    <h2 class="font-bold text-xl">
+
+                        🎉 Parking Approved
+
+                    </h2>
+
+                    <p class="text-slate-500 mt-2">
+
+                        Your parking lot has been approved by the administrator.
+
+                    </p>
+
+                    <small class="text-slate-400">
+
+                        3 days ago
+
+                    </small>
+
+                </div>
+
+                <button class="markRead text-emerald-600 font-semibold">
+
+                    Mark Read
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ====================================== -->
+<!-- Settings Section -->
+<!-- ====================================== -->
+
+<section id="setting-section" class="page-section hidden">
+
+    <div class="mb-8">
+
+        <h1 class="text-4xl font-bold">
+
+            Settings
+
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+
+            Manage your account preferences.
+
+        </p>
+
+    </div>
+
+
+    <!-- Account Settings -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            Account
+
+        </h2>
+
+        <div class="space-y-5">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        Email Notifications
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Receive booking and payment emails.
+
+                    </p>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    checked
+                    class="w-6 h-6">
+
+            </div>
+
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        SMS Notifications
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Receive booking SMS alerts.
+
+                    </p>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    checked
+                    class="w-6 h-6">
+
+            </div>
+
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        Dark Mode
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Switch dashboard theme.
+
+                    </p>
+
+                </div>
+
+                <button
+                    id="darkModeBtn"
+                    class="bg-slate-800 text-white px-5 py-2 rounded-xl">
+
+                    Enable
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Security -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            Security
+
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+            <button
+                class="bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600">
+
+                Change Password
+
+            </button>
+
+            <button
+                class="bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600">
+
+                Two Factor Authentication
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- System -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            System
+
+        </h2>
+
+        <div class="space-y-5">
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Version
+
+                </span>
+
+                <strong>
+
+                    Parkify v1.0
+
+                </strong>
+
+            </div>
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Last Login
+
+                </span>
+
+                <strong>
+
+                    {{ owner.last_login }}
+
+                </strong>
+
+            </div>
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Account Created
+
+                </span>
+
+                <strong>
+
+                    {{ owner.date_joined }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Danger Zone -->
+
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+
+        <h2 class="text-2xl font-bold text-red-600">
+
+            Danger Zone
+
+        </h2>
+
+        <p class="text-slate-500 mt-2">
+
+            These actions cannot be undone.
+
+        </p>
+
+        <div class="flex gap-4 mt-6">
+
+            <button
+                id="deleteAccountBtn"
+                class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl">
+
+                Delete Account
+
+            </button>
+
+            <a href="{% url 'logout' %}"
+               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl">
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+    </main>
+
+</div>
+
+<script>
+
+function showSection(sectionId, event) {
+
+    // Hide all sections
+    document.querySelectorAll(".page-section").forEach(section => {
+        section.classList.add("hidden");
+    });
+
+    // Show selected section
+    document.getElementById(sectionId).classList.remove("hidden");
+
+    // Reset sidebar buttons
+    document.querySelectorAll(".menu-btn").forEach(button => {
+        button.classList.remove("bg-emerald-500");
+        button.classList.add("hover:bg-slate-800");
+    });
+
+    // Highlight current button
+    if (event) {
+        event.currentTarget.classList.add("bg-emerald-500");
+    }
+
+    // ==========================
+    // Refresh Leaflet Map
+    // ==========================
+    if (sectionId === "add-parking-section" && typeof ownerMap !== "undefined") {
+
+        setTimeout(() => {
+            ownerMap.invalidateSize();
+            ownerMap.setView([28.3949, 84.1240], 7);
+        }, 300);
+
+    }
+
+}
+
+const bookingSearch = document.getElementById("bookingSearch");
+
+if (bookingSearch) {
+
+    bookingSearch.addEventListener("keyup", function () {
+
+        let value = this.value.toLowerCase();
+
+        document.querySelectorAll(".booking-row").forEach(row => {
+
+            row.style.display = row.innerText.toLowerCase().includes(value)
+                ? ""
+                : "none";
+
+        });
+
+    });
+
+}
+//return to parking lot after delete
+const params = new URLSearchParams(window.location.search);
+const activeTab = params.get('tab');
+
+if (activeTab === 'parking-lots') {
+    showSection('parking-lots');
+}
+
+// Earnings Chart
+
+const earningsCanvas = document.getElementById("earningsChart");
+
+if (earningsCanvas) {
+
+    const ctx = earningsCanvas.getContext("2d");
+
+    ctx.beginPath();
+
+    ctx.moveTo(30,200);
+
+    ctx.lineTo(80,160);
+
+    ctx.lineTo(130,140);
+
+    ctx.lineTo(180,90);
+
+    ctx.lineTo(230,70);
+
+    ctx.lineTo(280,120);
+
+    ctx.strokeStyle="#10b981";
+
+    ctx.lineWidth=4;
+
+    ctx.stroke();
+
+}
+
+
+
+// Occupancy Chart
+
+const occupancyCanvas=document.getElementById("occupancyChart");
+
+if(occupancyCanvas){
+
+    const ctx=occupancyCanvas.getContext("2d");
+
+    ctx.fillStyle="#e2e8f0";
+
+    ctx.fillRect(40,40,220,25);
+
+    ctx.fillStyle="#10b981";
+
+    ctx.fillRect(40,40,170,25);
+
+    ctx.font="16px Arial";
+
+    ctx.fillStyle="#111827";
+
+    ctx.fillText("Cars : 77%",40,90);
+
+    ctx.fillStyle="#e2e8f0";
+
+    ctx.fillRect(40,130,220,25);
+
+    ctx.fillStyle="#3b82f6";
+
+    ctx.fillRect(40,130,140,25);
+
+    ctx.fillStyle="#111827";
+
+    ctx.fillText("Bikes : 64%",40,180);
+
+}
+
+// =====================================
+// Notification Functions
+// =====================================
+
+document.querySelectorAll(".markRead").forEach(button => {
+
+    button.addEventListener("click", function () {
+
+        const card = this.closest(".notification-card");
+
+        card.classList.remove("shadow");
+
+        card.classList.add("opacity-60");
+
+        this.innerHTML = "Read";
+
+        this.disabled = true;
+
+    });
+
+});
+
+const clearBtn = document.getElementById("clearNotifications");
+
+if (clearBtn) {
+
+    clearBtn.addEventListener("click", function () {
+
+        if (confirm("Clear all notifications?")) {
+
+            document.getElementById("notificationContainer").innerHTML =
+
+            `
+            <div class="bg-white rounded-2xl shadow p-20 text-center">
+
+                <i data-lucide="bell-off"
+                   class="mx-auto w-20 h-20 text-slate-300"></i>
+
+                <h2 class="text-3xl font-bold mt-6">
+
+                    No Notifications
+
+                </h2>
+
+                <p class="text-slate-500 mt-3">
+
+                    You're all caught up!
+
+                </p>
+
+            </div>
+            `;
+
+            lucide.createIcons();
+
+        }
+
+    });
+
+}
+
+
+// ==========================================
+// Dark Mode
+// ==========================================
+
+const darkBtn = document.getElementById("darkModeBtn");
+
+if (darkBtn) {
+
+    darkBtn.addEventListener("click", function () {
+
+        document.body.classList.toggle("bg-slate-900");
+
+        document.body.classList.toggle("text-white");
+
+        document.body.classList.toggle("bg-slate-100");
+
+        document.body.classList.toggle("text-slate-800");
+
+        if (this.innerHTML === "Enable") {
+
+            this.innerHTML = "Disable";
+
+        } else {
+
+            this.innerHTML = "Enable";
+
+        }
+
+    });
+
+}
+
+
+
+// ==========================================
+// Delete Confirmation
+// ==========================================
+
+const deleteBtn = document.getElementById("deleteAccountBtn");
+
+if (deleteBtn) {
+
+    deleteBtn.addEventListener("click", function () {
+
+        const confirmDelete = confirm(
+
+            "Are you sure you want to delete your account?"
+
+        );
+
+        if (confirmDelete) {
+
+            alert("Account deletion request submitted.");
+
+        }
+
+    });
+
+}
+
+//map
+// ==========================
+// Leaflet Map
+// ==========================
+
+let ownerMap;
+let marker;
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const mapContainer = document.getElementById("ownerMap");
+
+    if (!mapContainer) return;
+
+    // Create map
+    ownerMap = L.map("ownerMap").setView([28.3949, 84.1240], 7);
+
+    // OpenStreetMap Tiles
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution: "&copy; OpenStreetMap contributors",
+            maxZoom: 19
+        }
+    ).addTo(ownerMap);
+
+    // Fix map when hidden initially
+    setTimeout(() => {
+        ownerMap.invalidateSize();
+    }, 500);
+
+    // Click to select location
+    ownerMap.on("click", function (e) {
+
+        if (marker) {
+            ownerMap.removeLayer(marker);
+        }
+
+        marker = L.marker(e.latlng).addTo(ownerMap);
+
+        document.getElementById("latitude").value = e.latlng.lat;
+        document.getElementById("longitude").value = e.latlng.lng;
+
+        document.getElementById("location").value =
+            e.latlng.lat.toFixed(6) +
+            ", " +
+            e.latlng.lng.toFixed(6);
+
+    });
+
+});
+
+// Call this whenever Add Parking section is opened
+function refreshOwnerMap() {
+
+    if (ownerMap) {
+
+        setTimeout(() => {
+            ownerMap.invalidateSize();
+        }, 200);
+
+    }
+
+}
+
+lucide.createIcons();
+
+</script>
+
+</body>
+
+</html>
