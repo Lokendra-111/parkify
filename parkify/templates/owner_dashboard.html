@@ -61,7 +61,8 @@
             </button>
 
             <button onclick="showSection('setting-section')"class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="settings"></i>Settings
+                <i data-lucide="settings"></i>
+                Settings
             </button>
         </nav>
 
@@ -78,6 +79,28 @@
     <!-- Content -->
 
     <main class="flex-1 p-8">
+        {% if messages %}
+
+    {% for message in messages %}
+
+        <div class="mb-4 p-4 rounded-xl
+            {% if message.tags == 'success' %}
+                bg-green-100 text-green-700
+            {% elif message.tags == 'error' %}
+                bg-red-100 text-red-700
+            {% else %}
+                bg-blue-100 text-blue-700
+            {% endif %}">
+
+            {{ message }}
+
+        </div>
+
+    {% endfor %}
+
+{% endif %}
+
+
         <!-- Dashboard -->
 <section id="dashboard-section" class="page-section space-y-8">
     <!-- Header -->
@@ -2131,10 +2154,7 @@
 
 </section>
 
-
-<!-- ====================================== -->
 <!-- Settings Section -->
-<!-- ====================================== -->
 
 <section id="setting-section" class="page-section hidden">
 
@@ -2264,21 +2284,23 @@
 
         <div class="grid md:grid-cols-2 gap-6">
 
-            <button
-                class="bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600">
+    <button
+        onclick="showSection('change-password-section')"
+        class="bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition">
 
-                Change Password
+        Change Password
 
-            </button>
+    </button>
 
-            <button
-                class="bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600">
+    <button
+        onclick="showSection('two-factor-section')"
+        class="bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition">
 
-                Two Factor Authentication
+        Two Factor Authentication
 
-            </button>
+    </button>
 
-        </div>
+</div>
 
     </div>
 
@@ -2384,6 +2406,94 @@
         </div>
 
     </div>
+
+</section>
+
+<!-- password changing form -->
+<section id="change-password-section" class="page-section hidden">
+
+<div class="mb-8">
+    <h1 class="text-4xl font-bold">Change Password</h1>
+    <p class="text-slate-500 mt-2">
+        Update your account password securely.
+    </p>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+
+<form method="POST" action="{% url 'change_password' %}">
+
+{% csrf_token %}
+
+<div class="space-y-5">
+
+<div>
+<label class="block mb-2 font-semibold">
+Current Password
+</label>
+
+<input
+type="password"
+name="current_password"
+class="w-full border rounded-xl p-3"
+required>
+
+</div>
+
+<div>
+
+<label class="block mb-2 font-semibold">
+New Password
+</label>
+
+<input
+type="password"
+name="new_password"
+class="w-full border rounded-xl p-3"
+required>
+
+</div>
+
+<div>
+
+<label class="block mb-2 font-semibold">
+Confirm Password
+</label>
+
+<input
+type="password"
+name="confirm_password"
+class="w-full border rounded-xl p-3"
+required>
+
+</div>
+
+<div class="flex gap-4">
+
+<button
+type="submit"
+class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl">
+
+Save Password
+
+</button>
+
+<button
+type="button"
+onclick="showSection('setting-section')"
+class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">
+
+Back
+
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
 
 </section>
 

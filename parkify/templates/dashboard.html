@@ -35,27 +35,20 @@
            class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
 
         <div class="p-6 border-b border-slate-800">
-            <h1 class="text-3xl font-bold text-emerald-400">
-                Parkify
-            </h1>
-
-            <p class="text-slate-400 text-sm mt-1">
-                User Dashboard
-            </p>
+            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+            <p class="text-slate-400 text-sm mt-1">User Dashboard</p>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
 
             <a href="{% url 'dashboard' %}"
                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500 text-white">
-
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </a>
 
             <a href="{% url 'my_bookings' %}"
                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-
                 <i data-lucide="calendar-check"></i>
                 My Bookings
             </a>
@@ -75,7 +68,7 @@
                 Notifications
             </button>
 
-            <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="showSection('setting-section')"class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
                 <i data-lucide="settings"></i>
                 Settings
             </button>
@@ -105,19 +98,11 @@
 
                 <div class="flex items-center gap-4">
 
-                    <button id="menuBtn"
-                            class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">
-                        ☰
-                    </button>
+                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">☰</button>
 
                     <div>
-                        <h2 class="text-3xl font-bold text-slate-800">
-                            Dashboard
-                        </h2>
-
-                        <p class="text-slate-500">
-                            Welcome back, {{ user.first_name }}
-                        </p>
+                        <h2 class="text-3xl font-bold text-slate-800">Dashboard</h2>
+                        <p class="text-slate-500">Welcome back, {{ user.first_name }}</p>
                     </div>
 
                 </div>
@@ -346,6 +331,350 @@
 
             </section>
 
+
+            <!-- Settings Section -->
+            <section id="setting-section" class="page-section hidden">
+
+    <div class="mb-8">
+
+        <h1 class="text-4xl font-bold">
+
+            Settings
+
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+
+            Manage your account preferences.
+
+        </p>
+
+    </div>
+
+
+    <!-- Account Settings -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            Account
+
+        </h2>
+
+        <div class="space-y-5">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        Email Notifications
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Receive booking and payment emails.
+
+                    </p>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    checked
+                    class="w-6 h-6">
+
+            </div>
+
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        SMS Notifications
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Receive booking SMS alerts.
+
+                    </p>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    checked
+                    class="w-6 h-6">
+
+            </div>
+
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <h3 class="font-semibold">
+
+                        Dark Mode
+
+                    </h3>
+
+                    <p class="text-slate-500">
+
+                        Switch dashboard theme.
+
+                    </p>
+
+                </div>
+
+                <button
+                    id="darkModeBtn"
+                    class="bg-slate-800 text-white px-5 py-2 rounded-xl">
+
+                    Enable
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Security -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            Security
+
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+    <button
+        onclick="showSection('change-password-section')"
+        class="bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition">
+
+        Change Password
+
+    </button>
+
+    <button
+        onclick="showSection('two-factor-section')"
+        class="bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition">
+
+        Two Factor Authentication
+
+    </button>
+
+</div>
+
+    </div>
+
+
+    <!-- System -->
+
+    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+
+        <h2 class="text-2xl font-bold mb-6">
+
+            System
+
+        </h2>
+
+        <div class="space-y-5">
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Version
+
+                </span>
+
+                <strong>
+
+                    Parkify v1.0
+
+                </strong>
+
+            </div>
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Last Login
+
+                </span>
+
+                <strong>
+
+                    {{ owner.last_login }}
+
+                </strong>
+
+            </div>
+
+            <div class="flex justify-between">
+
+                <span>
+
+                    Account Created
+
+                </span>
+
+                <strong>
+
+                    {{ owner.date_joined }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Danger Zone -->
+
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+
+        <h2 class="text-2xl font-bold text-red-600">
+
+            Danger Zone
+
+        </h2>
+
+        <p class="text-slate-500 mt-2">
+
+            These actions cannot be undone.
+
+        </p>
+
+        <div class="flex gap-4 mt-6">
+
+            <button
+                id="deleteAccountBtn"
+                class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl">
+
+                Delete Account
+
+            </button>
+
+            <a href="{% url 'logout' %}"
+               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl">
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section id="change-password-section" class="page-section hidden">
+
+<div class="mb-8">
+    <h1 class="text-4xl font-bold">Change Password</h1>
+    <p class="text-slate-500 mt-2">
+        Update your account password securely.
+    </p>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="space-y-5">
+
+<div>
+    <label class="block mb-2 font-semibold">Current Password</label>
+    <input type="password"name="current_password"class="w-full border rounded-xl p-3"required>
+</div>
+
+<div>
+    <label class="block mb-2 font-semibold">New Password</label>
+    <input type="password"name="new_password"class="w-full border rounded-xl p-3"required>
+</div>
+
+<div>
+    <label class="block mb-2 font-semibold">Confirm Password</label>
+    <input type="password"name="confirm_password"class="w-full border rounded-xl p-3"required>
+</div>
+
+<div class="flex gap-4">
+    <button type="submit"class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl">Save Password</button>
+    <button type="button"onclick="showSection('setting-section')"class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">Back</button>
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</section>
+<section id="two-factor-section" class="page-section hidden">
+
+<div class="mb-8">
+
+<h1 class="text-4xl font-bold">
+Two Factor Authentication
+</h1>
+
+<p class="text-slate-500 mt-2">
+Improve your account security.
+</p>
+
+</div>
+
+<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+
+<div class="space-y-6">
+
+<p>
+
+Two Factor Authentication adds an extra layer of security by requiring a verification code during login.
+
+</p>
+
+<button
+class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl">
+
+Enable 2FA
+
+</button>
+
+<button
+onclick="showSection('setting-section')"
+class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">
+
+Back
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
         </main>
 
         <footer class="text-center py-8 text-slate-500">
@@ -372,6 +701,82 @@ overlay.addEventListener('click', () => {
     sidebar.classList.add('-translate-x-full');
     overlay.classList.add('hidden');
 });
+
+// show section
+function showSection(sectionId) {
+
+    document.querySelectorAll(".page-section").forEach(section => {
+        section.classList.add("hidden");
+    });
+
+    document.getElementById(sectionId).classList.remove("hidden");
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+// ==========================================
+// Dark Mode
+// ==========================================
+
+const darkBtn = document.getElementById("darkModeBtn");
+
+if (darkBtn) {
+
+    darkBtn.addEventListener("click", function () {
+
+        document.body.classList.toggle("bg-slate-900");
+
+        document.body.classList.toggle("text-white");
+
+        document.body.classList.toggle("bg-slate-100");
+
+        document.body.classList.toggle("text-slate-800");
+
+        if (this.innerHTML === "Enable") {
+
+            this.innerHTML = "Disable";
+
+        } else {
+
+            this.innerHTML = "Enable";
+
+        }
+
+    });
+
+}
+
+
+
+// ==========================================
+// Delete Confirmation
+// ==========================================
+
+const deleteBtn = document.getElementById("deleteAccountBtn");
+
+if (deleteBtn) {
+
+    deleteBtn.addEventListener("click", function () {
+
+        const confirmDelete = confirm(
+
+            "Are you sure you want to delete your account?"
+
+        );
+
+        if (confirmDelete) {
+
+            alert("Account deletion request submitted.");
+
+        }
+
+    });
+
+}
 </script>
 
 </body>

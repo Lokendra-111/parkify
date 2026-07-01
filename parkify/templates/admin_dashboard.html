@@ -32,12 +32,8 @@
         class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
 
         <div class="p-6 border-b border-slate-800">
-            <h1 class="text-3xl font-bold text-emerald-400">
-                Parkify
-            </h1>
-            <p class="text-slate-400 text-sm mt-1">
-                Admin Control Center
-            </p>
+            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+            <p class="text-slate-400 text-sm mt-1">Admin Control Center</p>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -98,21 +94,11 @@
             <div class="flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-
-                    <button id="menuBtn"
-                        class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">
-                        ☰
-                    </button>
-
+                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">☰</button>
                     <div>
-                        <h2 class="text-3xl font-bold text-slate-800">
-                            Admin Dashboard
-                        </h2>
-                        <p class="text-slate-500">
-                            Welcome back, {{ admin.first_name }}
-                        </p>
+                        <h2 class="text-3xl font-bold text-slate-800">Admin Dashboard</h2>
+                        <p class="text-slate-500">Welcome back, {{ admin.first_name }}</p>
                     </div>
-
                 </div>
 
                 <div class="flex items-center gap-4">
@@ -130,12 +116,8 @@
                             </div>
 
                             <div class="hidden md:block text-left">
-                                <h4 class="font-semibold">
-                                    {{ admin.first_name }} {{ admin.last_name }}
-                                </h4>
-                                <p class="text-sm text-slate-500">
-                                    Administrator
-                                </p>
+                                <h4 class="font-semibold">{{ admin.first_name }} {{ admin.last_name }}</h4>
+                                <p class="text-sm text-slate-500">Administrator</p>
                             </div>
 
                         </button>
@@ -154,12 +136,8 @@
 
                 <!-- Welcome -->
                 <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg">
-                    <h1 class="text-4xl font-bold">
-                        Welcome back {{ admin.first_name }} 👋
-                    </h1>
-                    <p class="mt-3 text-emerald-100">
-                        Monitor owners, parking lots and approvals from one place.
-                    </p>
+                    <h1 class="text-4xl font-bold">Welcome back {{ admin.first_name }} 👋</h1>
+                    <p class="mt-3 text-emerald-100">Monitor owners, parking lots and approvals from one place.</p>
                 </div>
 
                 <!-- Stats -->
@@ -169,9 +147,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Owners</p>
-                                <h2 class="text-4xl font-bold mt-2">
-                                    {{ owners|length }}
-                                </h2>
+                                <h2 class="text-4xl font-bold mt-2">{{ owners|length }}</h2>
                             </div>
                             <div class="bg-blue-100 p-4 rounded-2xl">
                                 <i data-lucide="users" class="text-blue-600"></i>
@@ -183,9 +159,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Parking Lots</p>
-                                <h2 class="text-4xl font-bold mt-2">
-                                    {{ parking_lots|length }}
-                                </h2>
+                                <h2 class="text-4xl font-bold mt-2">{{ parking_lots|length }}</h2>
                             </div>
                             <div class="bg-emerald-100 p-4 rounded-2xl">
                                 <i data-lucide="car" class="text-emerald-600"></i>
@@ -197,9 +171,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Pending Owners</p>
-                                <h2 class="text-4xl font-bold mt-2">
-                                    {{ pending_owners|length }}
-                                </h2>
+                                <h2 class="text-4xl font-bold mt-2">{{ pending_owners|length }}</h2>
                             </div>
                             <div class="bg-yellow-100 p-4 rounded-2xl">
                                 <i data-lucide="clock-3" class="text-yellow-600"></i>
@@ -211,9 +183,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">System Status</p>
-                                <h2 class="text-2xl font-bold mt-3 text-green-600">
-                                    Online
-                                </h2>
+                                <h2 class="text-2xl font-bold mt-3 text-green-600">Online</h2>
                             </div>
                             <div class="bg-green-100 p-4 rounded-2xl">
                                 <i data-lucide="activity" class="text-green-600"></i>
@@ -225,9 +195,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Total Revenue</p>
-                                <h2 class="text-3xl font-bold mt-2 text-emerald-600">
-                                    Rs {{ total_revenue }}
-                                </h2>
+                                <h2 class="text-3xl font-bold mt-2 text-emerald-600">Rs {{ total_revenue }}</h2>
                             </div>
                             <div class="bg-emerald-100 p-4 rounded-2xl">
                                 <i data-lucide="banknote" class="text-emerald-600"></i>
@@ -239,9 +207,7 @@
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Active Bookings</p>
-                                <h2 class="text-4xl font-bold mt-2 text-blue-600">
-                                    {{ active_bookings_count }}
-                                </h2>
+                                <h2 class="text-4xl font-bold mt-2 text-blue-600">{{ active_bookings_count }}</h2>
                             </div>
                             <div class="bg-blue-100 p-4 rounded-2xl">
                                 <i data-lucide="calendar-check" class="text-blue-600"></i>
@@ -258,13 +224,9 @@
                 <div class="bg-white rounded-2xl shadow p-6">
 
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">
-                            Registered Owners
-                        </h2>
+                        <h2 class="text-2xl font-bold">Registered Owners</h2>
 
-                        <span class="bg-slate-100 px-4 py-2 rounded-xl">
-                            {{ owners|length }} Owners
-                        </span>
+                        <span class="bg-slate-100 px-4 py-2 rounded-xl">{{ owners|length }} Owners</span>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -285,47 +247,31 @@
                                 {% for owner in owners %}
                                 <tr class="border-b hover:bg-slate-50 transition">
 
-                                    <td class="p-4 font-medium">
-                                        {{ owner.full_name }}
-                                    </td>
+                                    <td class="p-4 font-medium">{{ owner.full_name }} </td>
+                            
+                                    <td class="p-4">{{ owner.company_name }} </td>
 
-                                    <td class="p-4">
-                                        {{ owner.company_name }}
-                                    </td>
-
-                                    <td class="p-4">
-                                        {{ owner.phone }}
-                                    </td>
+                                    <td class="p-4">{{ owner.phone }}</td>
 
                                     <td class="p-4">
                                         {% if owner.is_verified %}
-                                        <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm">
-                                            Verified
-                                        </span>
+                                        <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm">Verified</span>
                                         {% else %}
-                                        <span class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm">
-                                            Pending
-                                        </span>
+                                        <span class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm">Pending</span>
                                         {% endif %}
                                     </td>
 
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4" class="text-center py-10 text-slate-500">
-                                        No owners registered.
-                                    </td>
+                                    <td colspan="4" class="text-center py-10 text-slate-500">No owners registered.</td>
                                 </tr>
                                 {% endfor %}
 
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
-
             </section>
 
             <!-- Parking -->
@@ -333,9 +279,7 @@
 
                 <div class="bg-white rounded-2xl shadow p-6">
 
-                    <h2 class="text-2xl font-bold mb-6">
-                        Parking Lots
-                    </h2>
+                    <h2 class="text-2xl font-bold mb-6">Parking Lots</h2>
 
                     <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
@@ -343,13 +287,9 @@
 
                         <div class="border rounded-2xl p-6 hover:shadow-xl transition">
 
-                            <h3 class="text-xl font-bold">
-                                {{ parking.parking_name }}
-                            </h3>
+                            <h3 class="text-xl font-bold">{{ parking.parking_name }}</h3>
 
-                            <p class="text-slate-500 mt-2">
-                                {{ parking.location }}
-                            </p>
+                            <p class="text-slate-500 mt-2">{{ parking.location }}</p>
 
                             <div class="mt-5 space-y-2 text-sm">
 
@@ -406,15 +346,11 @@
                         </div>
 
                         {% empty %}
-                        <div class="col-span-full text-center py-16 text-slate-500">
-                            No parking lots available.
-                        </div>
+                        <div class="col-span-full text-center py-16 text-slate-500">No parking lots available.</div>
                         {% endfor %}
 
                     </div>
-
                 </div>
-
             </section>
 
             <!-- Bookings -->
@@ -423,9 +359,7 @@
                 <div class="bg-white rounded-2xl shadow p-6">
 
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-                        <h2 class="text-2xl font-bold">
-                            All Bookings
-                        </h2>
+                        <h2 class="text-2xl font-bold">All Bookings</h2>
 
                         <form method="GET" class="flex items-center gap-2">
                             <input type="hidden" name="section" value="bookings-section">
@@ -464,17 +398,11 @@
                                 <tr class="border-b hover:bg-slate-50 transition">
 
                                     <td class="p-4">#{{ booking.id }}</td>
-
                                     <td class="p-4">{{ booking.user.username }}</td>
-
                                     <td class="p-4 font-medium">{{ booking.parking_name }}</td>
-
                                     <td class="p-4">{{ booking.vehicle_number }} ({{ booking.vehicle_type }})</td>
-
                                     <td class="p-4">{{ booking.booking_date }}</td>
-
                                     <td class="p-4">Rs {{ booking.amount }}</td>
-
                                     <td class="p-4">
                                         {% if booking.payment_status == 'Paid' %}
                                         <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Paid</span>
@@ -504,29 +432,21 @@
                                                 <option value="Completed" {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
                                                 <option value="Cancelled" {% if booking.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
                                             </select>
-                                            <button type="submit" class="bg-slate-900 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm">
-                                                Update
-                                            </button>
+                                            <button type="submit" class="bg-slate-900 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm">Update</button>
                                         </form>
                                     </td>
 
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="9" class="text-center py-10 text-slate-500">
-                                        No bookings found.
-                                    </td>
+                                    <td colspan="9" class="text-center py-10 text-slate-500">No bookings found.</td>
                                 </tr>
                                 {% endfor %}
 
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
-
             </section>
 
             <!-- Verification -->
@@ -534,9 +454,7 @@
 
                 <div class="bg-white rounded-2xl shadow p-6">
 
-                    <h2 class="text-2xl font-bold mb-6">
-                        Pending Owner Verification
-                    </h2>
+                    <h2 class="text-2xl font-bold mb-6">Pending Owner Verification</h2>
 
                     <div class="space-y-5">
 
@@ -545,17 +463,9 @@
                         <div class="border rounded-2xl p-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 hover:shadow-lg transition">
 
                             <div>
-                                <h3 class="text-xl font-bold">
-                                    {{ owner.full_name }}
-                                </h3>
-
-                                <p class="text-slate-500 mt-2">
-                                    {{ owner.company_name }}
-                                </p>
-
-                                <p class="text-slate-500">
-                                    {{ owner.phone }}
-                                </p>
+                                <h3 class="text-xl font-bold">{{ owner.full_name }}</h3>
+                                <p class="text-slate-500 mt-2">{{ owner.company_name }}</p>
+                                <p class="text-slate-500">{{ owner.phone }}</p>
                             </div>
 
                             <div class="flex gap-3">
@@ -578,12 +488,8 @@
 
                         <div class="text-center py-16">
                             <i data-lucide="badge-check" class="mx-auto w-20 h-20 text-green-400"></i>
-                            <h3 class="text-2xl font-bold mt-4">
-                                All Owners Verified
-                            </h3>
-                            <p class="text-slate-500 mt-2">
-                                No pending verification requests.
-                            </p>
+                            <h3 class="text-2xl font-bold mt-4">All Owners Verified</h3>
+                            <p class="text-slate-500 mt-2">No pending verification requests.</p>
                         </div>
 
                         {% endfor %}
@@ -599,36 +505,19 @@
 
                 <div class="bg-white rounded-2xl shadow p-6">
 
-                    <h2 class="text-2xl font-bold mb-6">
-                        Settings
-                    </h2>
+                    <h2 class="text-2xl font-bold mb-6">Settings</h2>
 
                     <div class="grid md:grid-cols-2 gap-6">
 
                         <div class="border rounded-2xl p-6">
-                            <h3 class="font-bold text-lg">
-                                Admin Account
-                            </h3>
-
-                            <p class="mt-4 text-slate-600">
-                                Username :
-                                <strong>{{ admin.username }}</strong>
-                            </p>
-
-                            <p class="text-slate-600">
-                                Email :
-                                <strong>{{ admin.email }}</strong>
-                            </p>
+                            <h3 class="font-bold text-lg">Admin Account</h3>
+                            <p class="mt-4 text-slate-600">Username :<strong>{{ admin.username }}</strong></p>
+                            <p class="text-slate-600">Email :<strong>{{ admin.email }}</strong></p>
                         </div>
 
                         <div class="border rounded-2xl p-6">
-                            <h3 class="font-bold text-lg">
-                                System Status
-                            </h3>
-
-                            <p class="text-green-600 mt-4">
-                                ✔ Parkify Running Normally
-                            </p>
+                            <h3 class="font-bold text-lg">System Status</h3>
+                            <p class="text-green-600 mt-4">✔ Parkify Running Normally</p>
                         </div>
 
                     </div>

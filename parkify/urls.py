@@ -41,4 +41,8 @@ urlpatterns = [
     path('admin-dashboard/booking/<int:booking_id>/update/', views.admin_update_booking, name='admin_update_booking'),
     path('admin-dashboard/parking/<int:parking_id>/toggle/', views.admin_toggle_parking, name='admin_toggle_parking'),
     path('admin-dashboard/parking/<int:parking_id>/delete/', views.admin_delete_parking, name='admin_delete_parking'),
+
+
+# ----change password
+    path("change-password/",views.change_password,name="change_password"),
 ]

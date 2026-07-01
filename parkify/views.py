@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
@@ -881,13 +883,7 @@ def logout_view(request):
     return redirect('authentication')
 
 
-# ---- Forgot Password (custom flow for the Signup model) ----
-# Uses signup_token_generator (see tokens.py) - a Signup-specific subclass
-# of Django's PasswordResetTokenGenerator, since our custom model lacks the
-# last_login/get_email_field_name() that the built-in default_token_generator
-# expects. The token embeds a hash of the current password, so it
-# automatically becomes invalid the moment the password is changed
-# (single-use, no extra DB column needed).
+# Forgot Password (custom flow for the Signup model)
 
 def forgot_password(request):
 
@@ -918,8 +914,7 @@ def forgot_password(request):
                 fail_silently=True,
             )
 
-        # Always show the same message, whether or not the email exists,
-        # so this can't be used to check which emails are registered.
+        # Always show the same message, whether or not the email exists,so this can't be used to check which emails are registered.
         messages.success(
             request,
             "If an account exists for that email, a reset link has been sent."
@@ -975,3 +970,43 @@ def reset_password_confirm(request, uidb64, token):
 
 def password_reset_complete(request):
     return render(request, 'password_reset_complete.html')
+
+# changing the password
+@login_required
+def change_password(request):
+
+    if request.method == "POST":
+
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        user = request.user
+
+        # Check current password
+        if not user.check_password(current_password):
+            messages.error(request, "Current password is incorrect.")
+            return redirect("dashboard")
+
+        # Check password match
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return redirect("dashboard")
+
+        # Prevent same password
+        if current_password == new_password:
+            messages.error(request, "New password cannot be the same as the current password.")
+            return redirect("dashboard")
+
+        # Change password
+        user.set_password(new_password)
+        user.save()
+
+        # Keep user logged in
+        update_session_auth_hash(request, user)
+
+        messages.success(request, "Password changed successfully.")
+
+        return redirect("dashboard")
+
+    return redirect("dashboard")
