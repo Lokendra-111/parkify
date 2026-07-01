@@ -705,50 +705,53 @@ overlay.addEventListener('click', () => {
 // show section
 function showSection(sectionId) {
 
+    // Hide all page sections
     document.querySelectorAll(".page-section").forEach(section => {
         section.classList.add("hidden");
     });
 
-    document.getElementById(sectionId).classList.remove("hidden");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-
-}
-
-// ==========================================
-// Dark Mode
-// ==========================================
-
-const darkBtn = document.getElementById("darkModeBtn");
-
-if (darkBtn) {
-
-    darkBtn.addEventListener("click", function () {
-
-        document.body.classList.toggle("bg-slate-900");
-
-        document.body.classList.toggle("text-white");
-
-        document.body.classList.toggle("bg-slate-100");
-
-        document.body.classList.toggle("text-slate-800");
-
-        if (this.innerHTML === "Enable") {
-
-            this.innerHTML = "Disable";
-
-        } else {
-
-            this.innerHTML = "Enable";
-
+    // Hide the dashboard content
+    document.querySelectorAll("main > section").forEach(section => {
+        if (!section.classList.contains("page-section")) {
+            section.classList.add("hidden");
         }
-
     });
 
+    // Show the selected section
+    document.getElementById(sectionId).classList.remove("hidden");
 }
+
+// ==========================================
+    // Dark Mode
+    // ==========================================
+
+    const darkBtn = document.getElementById("darkModeBtn");
+
+    if (darkBtn) {
+
+        darkBtn.addEventListener("click", function () {
+
+            document.body.classList.toggle("bg-slate-900");
+
+            document.body.classList.toggle("text-white");
+
+            document.body.classList.toggle("bg-slate-100");
+
+            document.body.classList.toggle("text-slate-800");
+
+            if (this.innerHTML === "Enable") {
+
+                this.innerHTML = "Disable";
+
+            } else {
+
+                this.innerHTML = "Enable";
+
+            }
+
+        });
+
+    }
 
 
 
