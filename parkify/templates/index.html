@@ -12,21 +12,21 @@
 <body>
 <!-- Navbar -->
 <nav class="fixed top-0 left-0 w-full z-50 bg-slate-900/95 backdrop-blur-md shadow-lg">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div class="flex justify-between items-center h-20">
+        <div class="flex justify-between items-center h-16 sm:h-20">
 
             <!-- Logo -->
-            <a href="#" class="flex items-center gap-3">
+            <a href="#" class="flex items-center gap-2 sm:gap-3 min-w-0">
                 <img src="{% static 'parkify/images/logo1.png' %}"
             alt="Parkify Logo"
-     class="h-16 w-16 rounded-full object-cover border-2 border-blue-500 shadow-lg">
+     class="h-11 w-11 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-blue-500 shadow-lg shrink-0">
 
-                <div>
-                    <h1 class="text-2xl font-bold text-white">
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-2xl font-bold text-white truncate">
                         Parkify
                     </h1>
-                    <p class="text-xs text-gray-300">
+                    <p class="text-xs text-gray-300 truncate">
                         Smart Parking System
                     </p>
                 </div>
@@ -59,7 +59,7 @@
 
             <!-- Mobile Button -->
             <button id="menu-btn"
-                class="md:hidden text-white text-3xl">
+                class="md:hidden text-white text-3xl shrink-0" aria-label="Toggle menu" aria-expanded="false">
                 ☰
             </button>
 
@@ -91,13 +91,13 @@
     style="background-image: url('{% static "parkify/images/hero.jpg" %}')">
 
     <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
-        <div class="text-center text-white px-6">
+        <div class="text-center text-white px-4 sm:px-6">
 
-            <h1 class="text-5xl md:text-7xl font-bold mb-4">
+            <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-4">
                 Find & Reserve Parking Instantly
             </h1>
 
-            <p class="text-lg md:text-2xl mb-8">
+            <p class="text-base sm:text-lg md:text-2xl mb-8">
                 Smart parking made simple with Parkify
             </p>
 
@@ -107,28 +107,28 @@
 
 
 <!-- How it works -->
-<section class="py-20 bg-gray-100">
-    <div class="max-w-7xl mx-auto px-6">
+<section class="py-14 sm:py-20 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
         <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold">How Parkify Works</h2>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold">How Parkify Works</h2>
             <p class="text-gray-600 mt-2">
                 Book your parking space in 3 easy steps
             </p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
 
-            <div class="bg-white p-8 rounded-2xl shadow text-center">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow text-center">
 
     <div class="flex justify-center mb-5">
-        <svg class="w-14 h-14 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 sm:w-14 sm:h-14 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
   <path stroke-linecap="round" stroke-linejoin="round"
     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
 </svg>
     </div>
 
-    <h3 class="text-3xl font-bold mb-3">
+    <h3 class="text-2xl sm:text-3xl font-bold mb-3">
         Select Date
     </h3>
 
@@ -138,16 +138,16 @@
 
 </div>
 
-            <div class="bg-white p-8 rounded-2xl shadow text-center">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow text-center">
 
     <div class="flex justify-center mb-5">
-        <svg class="w-14 h-14 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 sm:w-14 sm:h-14 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
   <path stroke-linecap="round" stroke-linejoin="round"
     d="M9 17V7h4a3 3 0 110 6H9"/>
 </svg>
     </div>
 
-    <h3 class="text-3xl font-bold mb-3">
+    <h3 class="text-2xl sm:text-3xl font-bold mb-3">
         Choose Parking
     </h3>
 
@@ -157,16 +157,16 @@
 
 </div>
 
-            <div class="bg-white p-8 rounded-2xl shadow text-center">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow text-center sm:col-span-2 md:col-span-1">
 
     <div class="flex justify-center mb-5">
-        <svg class="w-14 h-14 text-green-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 sm:w-14 sm:h-14 text-green-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
   <path stroke-linecap="round" stroke-linejoin="round"
     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
 </svg>
     </div>
 
-    <h3 class="text-3xl font-bold mb-3">
+    <h3 class="text-2xl sm:text-3xl font-bold mb-3">
         Easy Booking
     </h3>
 
@@ -182,22 +182,22 @@
 
 
 <!-- About -->
-<section id="about" class="py-20">
-    <div class="max-w-7xl mx-auto px-6">
+<section id="about" class="py-14 sm:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
-        <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
 
             <div>
                 <img src="{% static 'parkify/images/about.jpg' %}"
-                    class="rounded-xl shadow-lg">
+                    class="rounded-xl shadow-lg w-full">
             </div>
 
             <div>
-                <h2 class="text-4xl font-bold mb-4">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
                     About Parkify
                 </h2>
 
-                <p class="text-gray-600 text-lg">
+                <p class="text-gray-600 text-base sm:text-lg">
                     Parkify is a smart vehicle parking and booking system
                     designed to make parking simple, fast, and stress-free.
                 </p>
@@ -209,40 +209,40 @@
 
 
 <!-- Why -->
-<section id="why" class="py-20 bg-slate-900 text-white">
-    <div class="max-w-7xl mx-auto px-6">
+<section id="why" class="py-14 sm:py-20 bg-slate-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
-        <div class="grid md:grid-cols-2 gap-10 items-center">
+        <div class="grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
 
             <div>
-                <h2 class="text-4xl font-bold mb-4">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
                     Why Choose Parkify?
                 </h2>
 
-                <p class="text-gray-300 text-lg">
+                <p class="text-gray-300 text-base sm:text-lg">
                     Smart & Hassle-Free Parking with secure booking.
                 </p>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-3 sm:gap-4">
 
-                <div class="bg-slate-800 p-6 rounded-xl text-center">
-                    <h3 class="text-3xl font-bold">24/7</h3>
+                <div class="bg-slate-800 p-5 sm:p-6 rounded-xl text-center">
+                    <h3 class="text-2xl sm:text-3xl font-bold">24/7</h3>
                     <p>Service</p>
                 </div>
 
-                <div class="bg-slate-800 p-6 rounded-xl text-center">
-                    <h3 class="text-3xl font-bold">1000+</h3>
+                <div class="bg-slate-800 p-5 sm:p-6 rounded-xl text-center">
+                    <h3 class="text-2xl sm:text-3xl font-bold">1000+</h3>
                     <p>Users</p>
                 </div>
 
-                <div class="bg-slate-800 p-6 rounded-xl text-center">
-                    <h3 class="text-3xl font-bold">500+</h3>
+                <div class="bg-slate-800 p-5 sm:p-6 rounded-xl text-center">
+                    <h3 class="text-2xl sm:text-3xl font-bold">500+</h3>
                     <p>Spaces</p>
                 </div>
 
-                <div class="bg-slate-800 p-6 rounded-xl text-center">
-                    <h3 class="text-3xl font-bold">4.9</h3>
+                <div class="bg-slate-800 p-5 sm:p-6 rounded-xl text-center">
+                    <h3 class="text-2xl sm:text-3xl font-bold">4.9</h3>
                     <p>Rating</p>
                 </div>
 
@@ -252,8 +252,32 @@
     </div>
 </section>
 
-<footer class="bg-black text-white text-center py-6">
+<footer class="bg-black text-white text-center py-6 px-4">
     <p>© 2026 Parkify. All rights reserved.</p>
 </footer>
+
+<script>
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (menuBtn && mobileMenu) {
+
+        menuBtn.addEventListener('click', () => {
+            const isOpen = !mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden');
+            menuBtn.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        // Close the mobile menu automatically after tapping a link
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+    }
+</script>
+
 </body>
 </html>

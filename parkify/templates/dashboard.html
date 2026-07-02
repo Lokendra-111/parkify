@@ -34,9 +34,15 @@
     <aside id="sidebar"
            class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
 
-        <div class="p-6 border-b border-slate-800">
-            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
-            <p class="text-slate-400 text-sm mt-1">User Dashboard</p>
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+                <p class="text-slate-400 text-sm mt-1">User Dashboard</p>
+            </div>
+
+            <button id="sidebarClose" class="lg:hidden p-2 rounded-lg hover:bg-slate-800" aria-label="Close menu">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -89,33 +95,33 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 lg:ml-72">
+    <div class="flex-1 lg:ml-72 min-w-0">
 
         <!-- Top Navbar -->
-        <header class="sticky top-0 bg-white border-b z-30 px-6 py-4">
+        <header class="sticky top-0 bg-white border-b z-30 px-4 sm:px-6 py-4">
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-3">
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
 
-                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">☰</button>
+                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg shrink-0">☰</button>
 
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-800">Dashboard</h2>
-                        <p class="text-slate-500">Welcome back, {{ user.first_name }}</p>
+                    <div class="min-w-0">
+                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 truncate">Dashboard</h2>
+                        <p class="text-slate-500 text-sm sm:text-base truncate">Welcome back, {{ user.first_name }}</p>
                     </div>
 
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4">
 
-                    <button class="bg-slate-100 p-3 rounded-full hover:bg-slate-200 transition">
+                    <button class="bg-slate-100 p-2.5 sm:p-3 rounded-full hover:bg-slate-200 transition">
                         <i data-lucide="bell"></i>
                     </button>
 
-                    <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2">
+                    <div class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 sm:px-4 py-2">
 
-                        <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">
+                        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shrink-0">
                             {{ user.first_name|slice:":1" }}
                         </div>
 
@@ -137,12 +143,12 @@
 
         </header>
 
-        <main class="p-6 space-y-8">
+        <main class="p-4 sm:p-6 space-y-6 sm:space-y-8">
 
             <!-- Hero -->
-            <section class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg">
+            <section class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
 
-                <h1 class="text-4xl font-bold">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
                     Welcome back, {{ user.first_name }} 👋
                 </h1>
 
@@ -153,32 +159,32 @@
             </section>
 
             <!-- Statistics -->
-            <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 
-                <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                     <p class="text-slate-500">Total Bookings</p>
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2">
                         {{ bookings|length|default:"0" }}
                     </h2>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                     <p class="text-slate-500">Active Bookings</p>
-                    <h2 class="text-4xl font-bold mt-2 text-green-600">
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2 text-green-600">
                         0
                     </h2>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                     <p class="text-slate-500">Completed Trips</p>
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2">
                         0
                     </h2>
                 </div>
 
-                <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                     <p class="text-slate-500">Saved Locations</p>
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2">
                         0
                     </h2>
                 </div>
@@ -186,9 +192,9 @@
             </section>
 
             <!-- Quick Actions -->
-            <section class="grid md:grid-cols-3 gap-6">
+            <section class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
 
-                <a href="{% url 'browse_parking' %}" class="bg-white rounded-2xl shadow p-6 hover:bg-slate-900 hover:text-white transition cursor-pointer block">
+                <a href="{% url 'browse_parking' %}" class="bg-white rounded-2xl shadow p-5 sm:p-6 hover:bg-slate-900 hover:text-white transition cursor-pointer block">
                     <i data-lucide="search" class="mb-4"></i>
 
                     <h3 class="text-lg font-bold">
@@ -201,7 +207,7 @@
                 </a>
 
                 <a href="{% url 'my_bookings' %}"
-                   class="bg-white rounded-2xl shadow p-6 hover:bg-slate-900 hover:text-white transition block">
+                   class="bg-white rounded-2xl shadow p-5 sm:p-6 hover:bg-slate-900 hover:text-white transition block">
 
                     <i data-lucide="calendar-check" class="mb-4"></i>
 
@@ -214,7 +220,7 @@
                     </p>
                 </a>
 
-                <div class="bg-white rounded-2xl shadow p-6 hover:bg-slate-900 hover:text-white transition cursor-pointer">
+                <div class="bg-white rounded-2xl shadow p-5 sm:p-6 hover:bg-slate-900 hover:text-white transition cursor-pointer">
                     <i data-lucide="map-pin" class="mb-4"></i>
 
                     <h3 class="text-lg font-bold">
@@ -229,11 +235,11 @@
             </section>
 
             <!-- Recent Bookings -->
-            <section class="bg-white rounded-2xl shadow p-6">
+            <section class="bg-white rounded-2xl shadow p-4 sm:p-6">
 
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
 
-                    <h2 class="text-2xl font-bold">
+                    <h2 class="text-xl sm:text-2xl font-bold">
                         Recent Bookings
                     </h2>
 
@@ -252,10 +258,10 @@
 
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="text-left p-4">Parking</th>
-                                <th class="text-left p-4">Vehicle</th>
-                                <th class="text-left p-4">Amount</th>
-                                <th class="text-left p-4">Status</th>
+                                <th class="text-left p-4 whitespace-nowrap">Parking</th>
+                                <th class="text-left p-4 whitespace-nowrap">Vehicle</th>
+                                <th class="text-left p-4 whitespace-nowrap">Amount</th>
+                                <th class="text-left p-4 whitespace-nowrap">Status</th>
                             </tr>
                         </thead>
 
@@ -265,19 +271,19 @@
 
                         <tr class="border-b hover:bg-slate-50">
 
-                            <td class="p-4">
+                            <td class="p-4 whitespace-nowrap">
                                 {{ booking.parking_name }}
                             </td>
 
-                            <td class="p-4">
+                            <td class="p-4 whitespace-nowrap">
                                 {{ booking.vehicle_number }}
                             </td>
 
-                            <td class="p-4">
+                            <td class="p-4 whitespace-nowrap">
                                 Rs {{ booking.amount }}
                             </td>
 
-                            <td class="p-4">
+                            <td class="p-4 whitespace-nowrap">
 
                                 {% if booking.status == 'Completed' %}
                                     <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
@@ -337,7 +343,7 @@
 
     <div class="mb-8">
 
-        <h1 class="text-4xl font-bold">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
             Settings
 
@@ -354,7 +360,7 @@
 
     <!-- Account Settings -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -364,7 +370,7 @@
 
         <div class="space-y-5">
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-4">
 
                 <div>
 
@@ -385,12 +391,12 @@
                 <input
                     type="checkbox"
                     checked
-                    class="w-6 h-6">
+                    class="w-6 h-6 shrink-0">
 
             </div>
 
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-4">
 
                 <div>
 
@@ -411,12 +417,12 @@
                 <input
                     type="checkbox"
                     checked
-                    class="w-6 h-6">
+                    class="w-6 h-6 shrink-0">
 
             </div>
 
 
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
 
                 <div>
 
@@ -436,7 +442,7 @@
 
                 <button
                     id="darkModeBtn"
-                    class="bg-slate-800 text-white px-5 py-2 rounded-xl">
+                    class="bg-slate-800 text-white px-5 py-2 rounded-xl self-start sm:self-auto">
 
                     Enable
 
@@ -451,7 +457,7 @@
 
     <!-- Security -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -484,7 +490,7 @@
 
     <!-- System -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -494,7 +500,7 @@
 
         <div class="space-y-5">
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -510,7 +516,7 @@
 
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -526,7 +532,7 @@
 
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -549,7 +555,7 @@
 
     <!-- Danger Zone -->
 
-    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-5 sm:p-8">
 
         <h2 class="text-2xl font-bold text-red-600">
 
@@ -563,7 +569,7 @@
 
         </p>
 
-        <div class="flex gap-4 mt-6">
+        <div class="flex flex-col sm:flex-row gap-4 mt-6">
 
             <button
                 id="deleteAccountBtn"
@@ -574,7 +580,7 @@
             </button>
 
             <a href="{% url 'logout' %}"
-               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl">
+               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl text-center">
 
                 Logout
 
@@ -589,13 +595,13 @@
 <section id="change-password-section" class="page-section hidden">
 
 <div class="mb-8">
-    <h1 class="text-4xl font-bold">Change Password</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Change Password</h1>
     <p class="text-slate-500 mt-2">
         Update your account password securely.
     </p>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
 
 <form method="POST">
 
@@ -618,7 +624,7 @@
     <input type="password"name="confirm_password"class="w-full border rounded-xl p-3"required>
 </div>
 
-<div class="flex gap-4">
+<div class="flex flex-col sm:flex-row gap-4">
     <button type="submit"class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl">Save Password</button>
     <button type="button"onclick="showSection('setting-section')"class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">Back</button>
 </div>
@@ -634,7 +640,7 @@
 
 <div class="mb-8">
 
-<h1 class="text-4xl font-bold">
+<h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 Two Factor Authentication
 </h1>
 
@@ -644,7 +650,7 @@ Improve your account security.
 
 </div>
 
-<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
 
 <div class="space-y-6">
 
@@ -653,6 +659,8 @@ Improve your account security.
 Two Factor Authentication adds an extra layer of security by requiring a verification code during login.
 
 </p>
+
+<div class="flex flex-col sm:flex-row gap-4">
 
 <button
 class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl">
@@ -673,11 +681,13 @@ Back
 
 </div>
 
+</div>
+
 </section>
 
         </main>
 
-        <footer class="text-center py-8 text-slate-500">
+        <footer class="text-center py-8 text-slate-500 px-4">
             © 2026 Parkify Parking Management System. All Rights Reserved.
         </footer>
 
@@ -691,15 +701,33 @@ lucide.createIcons();
 const menuBtn = document.getElementById('menuBtn');
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
+const sidebarClose = document.getElementById('sidebarClose');
 
-menuBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-});
+function openSidebar() {
+    sidebar.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+}
 
-overlay.addEventListener('click', () => {
+function closeSidebar() {
     sidebar.classList.add('-translate-x-full');
     overlay.classList.add('hidden');
+}
+
+menuBtn.addEventListener('click', openSidebar);
+
+overlay.addEventListener('click', closeSidebar);
+
+if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeSidebar);
+}
+
+// Close the mobile drawer automatically after choosing a sidebar link
+document.querySelectorAll('#sidebar a, #sidebar button').forEach(el => {
+    el.addEventListener('click', () => {
+        if (window.innerWidth < 1024) {
+            closeSidebar();
+        }
+    });
 });
 
 // show section
@@ -719,6 +747,9 @@ function showSection(sectionId) {
 
     // Show the selected section
     document.getElementById(sectionId).classList.remove("hidden");
+
+    // Scroll back to top so the newly shown section is visible
+    window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 // ==========================================
@@ -784,4 +815,3 @@ if (deleteBtn) {
 
 </body>
 </html>
-

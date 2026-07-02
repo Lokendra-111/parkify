@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,9 +30,15 @@
     <aside id="sidebar"
         class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
 
-        <div class="p-6 border-b border-slate-800">
-            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
-            <p class="text-slate-400 text-sm mt-1">Admin Control Center</p>
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+                <p class="text-slate-400 text-sm mt-1">Admin Control Center</p>
+            </div>
+
+            <button id="sidebarClose" class="lg:hidden p-2 rounded-lg hover:bg-slate-800" aria-label="Close menu">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -87,31 +92,31 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 lg:ml-72">
+    <div class="flex-1 lg:ml-72 min-w-0">
 
         <!-- Header -->
-        <header class="sticky top-0 z-30 bg-white border-b px-6 py-4">
-            <div class="flex justify-between items-center">
+        <header class="sticky top-0 z-30 bg-white border-b px-4 sm:px-6 py-4">
+            <div class="flex justify-between items-center gap-3">
 
-                <div class="flex items-center gap-4">
-                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg">☰</button>
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-800">Admin Dashboard</h2>
-                        <p class="text-slate-500">Welcome back, {{ admin.first_name }}</p>
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg shrink-0">☰</button>
+                    <div class="min-w-0">
+                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 truncate">Admin Dashboard</h2>
+                        <p class="text-slate-500 text-sm sm:text-base truncate">Welcome back, {{ admin.first_name }}</p>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-4">
 
-                    <button class="bg-slate-100 p-3 rounded-full hover:bg-slate-200 transition">
+                    <button class="bg-slate-100 p-2.5 sm:p-3 rounded-full hover:bg-slate-200 transition">
                         <i data-lucide="bell"></i>
                     </button>
 
                     <div class="relative group">
 
-                        <button class="flex items-center gap-3 bg-slate-100 rounded-xl px-4 py-2 hover:bg-slate-200 transition">
+                        <button class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 sm:px-4 py-2 hover:bg-slate-200 transition">
 
-                            <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">
+                            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shrink-0">
                                 {{ admin.first_name|slice:":1" }}
                             </div>
 
@@ -129,87 +134,87 @@
             </div>
         </header>
 
-        <main class="p-6 space-y-8">
+        <main class="p-4 sm:p-6 space-y-6 sm:space-y-8">
 
             <!-- Dashboard -->
             <section id="dashboard-section">
 
                 <!-- Welcome -->
-                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg">
-                    <h1 class="text-4xl font-bold">Welcome back {{ admin.first_name }} 👋</h1>
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Welcome back {{ admin.first_name }} 👋</h1>
                     <p class="mt-3 text-emerald-100">Monitor owners, parking lots and approvals from one place.</p>
                 </div>
 
                 <!-- Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mt-6 sm:mt-8">
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Owners</p>
-                                <h2 class="text-4xl font-bold mt-2">{{ owners|length }}</h2>
+                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ owners|length }}</h2>
                             </div>
-                            <div class="bg-blue-100 p-4 rounded-2xl">
+                            <div class="bg-blue-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="users" class="text-blue-600"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Parking Lots</p>
-                                <h2 class="text-4xl font-bold mt-2">{{ parking_lots|length }}</h2>
+                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ parking_lots|length }}</h2>
                             </div>
-                            <div class="bg-emerald-100 p-4 rounded-2xl">
+                            <div class="bg-emerald-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="car" class="text-emerald-600"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Pending Owners</p>
-                                <h2 class="text-4xl font-bold mt-2">{{ pending_owners|length }}</h2>
+                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ pending_owners|length }}</h2>
                             </div>
-                            <div class="bg-yellow-100 p-4 rounded-2xl">
+                            <div class="bg-yellow-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="clock-3" class="text-yellow-600"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">System Status</p>
-                                <h2 class="text-2xl font-bold mt-3 text-green-600">Online</h2>
+                                <h2 class="text-xl sm:text-2xl font-bold mt-3 text-green-600">Online</h2>
                             </div>
-                            <div class="bg-green-100 p-4 rounded-2xl">
+                            <div class="bg-green-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="activity" class="text-green-600"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Total Revenue</p>
-                                <h2 class="text-3xl font-bold mt-2 text-emerald-600">Rs {{ total_revenue }}</h2>
+                                <h2 class="text-2xl sm:text-3xl font-bold mt-2 text-emerald-600">Rs {{ total_revenue }}</h2>
                             </div>
-                            <div class="bg-emerald-100 p-4 rounded-2xl">
+                            <div class="bg-emerald-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="banknote" class="text-emerald-600"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-6 shadow hover:shadow-xl transition">
+                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
                         <div class="flex justify-between">
                             <div>
                                 <p class="text-slate-500">Active Bookings</p>
-                                <h2 class="text-4xl font-bold mt-2 text-blue-600">{{ active_bookings_count }}</h2>
+                                <h2 class="text-3xl sm:text-4xl font-bold mt-2 text-blue-600">{{ active_bookings_count }}</h2>
                             </div>
-                            <div class="bg-blue-100 p-4 rounded-2xl">
+                            <div class="bg-blue-100 p-3 sm:p-4 rounded-2xl shrink-0">
                                 <i data-lucide="calendar-check" class="text-blue-600"></i>
                             </div>
                         </div>
@@ -221,24 +226,24 @@
             <!-- Owners -->
             <section id="owners-section" class="hidden">
 
-                <div class="bg-white rounded-2xl shadow p-6">
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
 
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">Registered Owners</h2>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                        <h2 class="text-xl sm:text-2xl font-bold">Registered Owners</h2>
 
                         <span class="bg-slate-100 px-4 py-2 rounded-xl">{{ owners|length }} Owners</span>
                     </div>
 
                     <div class="overflow-x-auto">
 
-                        <table class="w-full">
+                        <table class="w-full min-w-[600px]">
 
                             <thead class="bg-slate-50">
                                 <tr>
-                                    <th class="text-left p-4">Owner</th>
-                                    <th class="text-left p-4">Company</th>
-                                    <th class="text-left p-4">Phone</th>
-                                    <th class="text-left p-4">Status</th>
+                                    <th class="text-left p-4 whitespace-nowrap">Owner</th>
+                                    <th class="text-left p-4 whitespace-nowrap">Company</th>
+                                    <th class="text-left p-4 whitespace-nowrap">Phone</th>
+                                    <th class="text-left p-4 whitespace-nowrap">Status</th>
                                 </tr>
                             </thead>
 
@@ -247,13 +252,13 @@
                                 {% for owner in owners %}
                                 <tr class="border-b hover:bg-slate-50 transition">
 
-                                    <td class="p-4 font-medium">{{ owner.full_name }} </td>
+                                    <td class="p-4 font-medium whitespace-nowrap">{{ owner.full_name }} </td>
                             
-                                    <td class="p-4">{{ owner.company_name }} </td>
+                                    <td class="p-4 whitespace-nowrap">{{ owner.company_name }} </td>
 
-                                    <td class="p-4">{{ owner.phone }}</td>
+                                    <td class="p-4 whitespace-nowrap">{{ owner.phone }}</td>
 
-                                    <td class="p-4">
+                                    <td class="p-4 whitespace-nowrap">
                                         {% if owner.is_verified %}
                                         <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm">Verified</span>
                                         {% else %}
@@ -277,15 +282,15 @@
             <!-- Parking -->
             <section id="parking-section" class="hidden">
 
-                <div class="bg-white rounded-2xl shadow p-6">
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
 
-                    <h2 class="text-2xl font-bold mb-6">Parking Lots</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6">Parking Lots</h2>
 
-                    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
 
                         {% for parking in parking_lots %}
 
-                        <div class="border rounded-2xl p-6 hover:shadow-xl transition">
+                        <div class="border rounded-2xl p-5 sm:p-6 hover:shadow-xl transition">
 
                             <h3 class="text-xl font-bold">{{ parking.parking_name }}</h3>
 
@@ -293,27 +298,27 @@
 
                             <div class="mt-5 space-y-2 text-sm">
 
-                                <div class="flex justify-between">
+                                <div class="flex justify-between gap-3">
                                     <span>Owner</span>
-                                    <span>{{ parking.owner.full_name }}</span>
+                                    <span class="text-right">{{ parking.owner.full_name }}</span>
                                 </div>
 
-                                <div class="flex justify-between">
+                                <div class="flex justify-between gap-3">
                                     <span>Cars</span>
                                     <span>{{ parking.car_capacity }}</span>
                                 </div>
 
-                                <div class="flex justify-between">
+                                <div class="flex justify-between gap-3">
                                     <span>Bikes</span>
                                     <span>{{ parking.bike_capacity }}</span>
                                 </div>
 
-                                <div class="flex justify-between">
+                                <div class="flex justify-between gap-3">
                                     <span>Rate</span>
                                     <span>Rs {{ parking.rate_per_hour }}/hr</span>
                                 </div>
 
-                                <div class="flex justify-between items-center pt-1">
+                                <div class="flex justify-between items-center pt-1 gap-3">
                                     <span>Status</span>
                                     {% if parking.is_active %}
                                     <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Active</span>
@@ -324,7 +329,7 @@
 
                             </div>
 
-                            <div class="flex gap-2 mt-5">
+                            <div class="flex flex-col sm:flex-row gap-2 mt-5">
 
                                 <form method="POST" action="{% url 'admin_toggle_parking' parking.id %}" class="flex-1">
                                     {% csrf_token %}
@@ -356,15 +361,15 @@
             <!-- Bookings -->
             <section id="bookings-section" class="hidden">
 
-                <div class="bg-white rounded-2xl shadow p-6">
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
 
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-                        <h2 class="text-2xl font-bold">All Bookings</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold">All Bookings</h2>
 
                         <form method="GET" class="flex items-center gap-2">
                             <input type="hidden" name="section" value="bookings-section">
                             <select name="status" onchange="this.form.submit()"
-                                    class="border rounded-xl px-4 py-2">
+                                    class="border rounded-xl px-4 py-2 w-full sm:w-auto">
                                 <option value="">All Statuses</option>
                                 <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
                                 <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
@@ -452,15 +457,15 @@
             <!-- Verification -->
             <section id="verification-section" class="hidden">
 
-                <div class="bg-white rounded-2xl shadow p-6">
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
 
-                    <h2 class="text-2xl font-bold mb-6">Pending Owner Verification</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6">Pending Owner Verification</h2>
 
                     <div class="space-y-5">
 
                         {% for owner in pending_owners %}
 
-                        <div class="border rounded-2xl p-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 hover:shadow-lg transition">
+                        <div class="border rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 hover:shadow-lg transition">
 
                             <div>
                                 <h3 class="text-xl font-bold">{{ owner.full_name }}</h3>
@@ -468,15 +473,15 @@
                                 <p class="text-slate-500">{{ owner.phone }}</p>
                             </div>
 
-                            <div class="flex gap-3">
+                            <div class="flex flex-col sm:flex-row gap-3">
 
                                 <a href="{% url 'approve_owner' owner.id %}"
-                                   class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl">
+                                   class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl text-center">
                                     Approve
                                 </a>
 
                                 <a href="{% url 'reject_owner' owner.id %}"
-                                   class="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl">
+                                   class="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl text-center">
                                     Reject
                                 </a>
 
@@ -509,7 +514,7 @@
 
     <div class="mb-8">
 
-        <h1 class="text-4xl font-bold">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
             Settings
 
@@ -526,7 +531,7 @@
 
     <!-- Account Settings -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -536,7 +541,7 @@
 
         <div class="space-y-5">
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-4">
 
                 <div>
 
@@ -557,12 +562,12 @@
                 <input
                     type="checkbox"
                     checked
-                    class="w-6 h-6">
+                    class="w-6 h-6 shrink-0">
 
             </div>
 
 
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-4">
 
                 <div>
 
@@ -583,12 +588,12 @@
                 <input
                     type="checkbox"
                     checked
-                    class="w-6 h-6">
+                    class="w-6 h-6 shrink-0">
 
             </div>
 
 
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
 
                 <div>
 
@@ -608,7 +613,7 @@
 
                 <button
                     id="darkModeBtn"
-                    class="bg-slate-800 text-white px-5 py-2 rounded-xl">
+                    class="bg-slate-800 text-white px-5 py-2 rounded-xl self-start sm:self-auto">
 
                     Enable
 
@@ -623,7 +628,7 @@
 
     <!-- Security -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -656,7 +661,7 @@
 
     <!-- System -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -666,7 +671,7 @@
 
         <div class="space-y-5">
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -682,7 +687,7 @@
 
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -698,7 +703,7 @@
 
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-4">
 
                 <span>
 
@@ -721,7 +726,7 @@
 
     <!-- Danger Zone -->
 
-    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-5 sm:p-8">
 
         <h2 class="text-2xl font-bold text-red-600">
 
@@ -735,7 +740,7 @@
 
         </p>
 
-        <div class="flex gap-4 mt-6">
+        <div class="flex flex-col sm:flex-row gap-4 mt-6">
 
             <button
                 id="deleteAccountBtn"
@@ -746,7 +751,7 @@
             </button>
 
             <a href="{% url 'logout' %}"
-               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl">
+               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl text-center">
 
                 Logout
 
@@ -761,13 +766,13 @@
 <section id="change-password-section" class="page-section hidden">
 
 <div class="mb-8">
-    <h1 class="text-4xl font-bold">Change Password</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Change Password</h1>
     <p class="text-slate-500 mt-2">
         Update your account password securely.
     </p>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
 
 <form method="POST">
 
@@ -790,7 +795,7 @@
     <input type="password"name="confirm_password"class="w-full border rounded-xl p-3"required>
 </div>
 
-<div class="flex gap-4">
+<div class="flex flex-col sm:flex-row gap-4">
     <button type="submit"class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl">Save Password</button>
     <button type="button"onclick="showSection('setting-section')"class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">Back</button>
 </div>
@@ -806,7 +811,7 @@
 
 <div class="mb-8">
 
-<h1 class="text-4xl font-bold">
+<h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 Two Factor Authentication
 </h1>
 
@@ -816,7 +821,7 @@ Improve your account security.
 
 </div>
 
-<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
 
 <div class="space-y-6">
 
@@ -825,6 +830,8 @@ Improve your account security.
 Two Factor Authentication adds an extra layer of security by requiring a verification code during login.
 
 </p>
+
+<div class="flex flex-col sm:flex-row gap-4">
 
 <button
 class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl">
@@ -840,6 +847,8 @@ class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">
 Back
 
 </button>
+
+</div>
 
 </div>
 
@@ -885,6 +894,14 @@ function showSection(section){
     if(activeSection){
         activeSection.classList.remove('hidden');
     }
+
+    // Close the mobile sidebar drawer whenever a section is opened
+    if (window.innerWidth < 1024) {
+        closeSidebar();
+    }
+
+    // Scroll back to top so the newly shown section is visible
+    window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 {% if status_filter %}
@@ -895,16 +912,25 @@ showSection('bookings-section');
 const menuBtn=document.getElementById('menuBtn');
 const sidebar=document.getElementById('sidebar');
 const overlay=document.getElementById('overlay');
+const sidebarClose=document.getElementById('sidebarClose');
 
-menuBtn.addEventListener('click',()=>{
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-});
+function openSidebar(){
+    sidebar.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+}
 
-overlay.addEventListener('click',()=>{
+function closeSidebar(){
     sidebar.classList.add('-translate-x-full');
     overlay.classList.add('hidden');
-});
+}
+
+menuBtn.addEventListener('click', openSidebar);
+
+overlay.addEventListener('click', closeSidebar);
+
+if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeSidebar);
+}
 
 
 // Dark Mode

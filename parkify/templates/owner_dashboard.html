@@ -19,48 +19,69 @@
 
 <div class="flex min-h-screen">
 
+    <!-- Mobile Top Bar -->
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-30 bg-slate-900 text-white flex items-center justify-between px-4 py-3 shadow">
+        <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-bold text-emerald-400">Parkify</h1>
+            <span class="text-slate-400 text-sm">Owner</span>
+        </div>
+        <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-slate-800" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+    </header>
+
+    <!-- Mobile Overlay -->
+    <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+
     <!-- Sidebar -->
 
-    <aside class="w-72 bg-slate-900 text-white flex flex-col">
+    <aside id="ownerSidebar" class="w-72 bg-slate-900 text-white flex flex-col fixed lg:static inset-y-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-y-auto">
 
-        <div class="p-6 border-b border-slate-700">
+        <div class="p-6 border-b border-slate-700 flex items-center justify-between">
 
-            <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
-            <p class="text-slate-400">Owner Panel</p>
+            <div>
+                <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
+                <p class="text-slate-400">Owner Panel</p>
+            </div>
+
+            <button id="sidebarClose" class="lg:hidden p-2 rounded-lg hover:bg-slate-800" aria-label="Close menu">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
         </div>
 
         <nav class="flex-1 p-4 space-y-2">
 
-            <button onclick="showSection('dashboard-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500">
+            <button onclick="showSection('dashboard-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500">
                 <i data-lucide="layout-dashboard"></i>
                 Dashboard
             </button>
-            <button onclick="showSection('profile-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('profile-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="user-circle"></i>
                 Profile
             </button>
-            <button onclick="showSection('document-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('document-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="file-text"></i>
                 Documents
             </button>
-            <button onclick="showSection('add-parking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('add-parking-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="plus-circle"></i>
                 Add Parking
             </button>
-            <button onclick="showSection('parking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('parking-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="map-pinned"></i>
                 Parking Lots
             </button>
-            <button onclick="showSection('booking-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('booking-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="calendar-check"></i>
                 Bookings
             </button>
-            <button onclick="showSection('notification-section')" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
+            <button onclick="showSection('notification-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="bell"></i>
                 Notifications
             </button>
 
-            <button onclick="showSection('setting-section')"class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+            <button onclick="showSection('setting-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
                 <i data-lucide="settings"></i>
                 Settings
             </button>
@@ -78,7 +99,7 @@
 
     <!-- Content -->
 
-    <main class="flex-1 p-8">
+    <main class="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
         {% if messages %}
 
     {% for message in messages %}
@@ -104,9 +125,9 @@
         <!-- Dashboard -->
 <section id="dashboard-section" class="page-section space-y-8">
     <!-- Header -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-4xl font-bold">Welcome {{ owner.first_name }} 👋</h1>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Welcome {{ owner.first_name }} 👋</h1>
             <p class="text-slate-500 mt-2">Here's what's happening with your parking business today.</p>
         </div>
 
@@ -130,7 +151,7 @@
 
                     </p>
 
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">
 
                         {{ parkings.count }}
 
@@ -163,7 +184,7 @@
 
                     </p>
 
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">
 
                         {{ bookings.count }}
 
@@ -196,7 +217,7 @@
 
                     </p>
 
-                    <h2 class="text-4xl font-bold mt-2 text-green-600">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2 text-green-600">
 
                         Rs {{ monthly_earnings }}
 
@@ -229,7 +250,7 @@
 
                     </p>
 
-                    <h2 class="text-4xl font-bold mt-2">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">
 
                         {{ occupancy }}%
 
@@ -256,7 +277,7 @@
 
         <button onclick="showSection('add-parking-section')"
 
-        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-emerald-500 hover:text-white transition">
+        class="bg-white rounded-2xl shadow p-5 sm:p-8 text-left hover:bg-emerald-500 hover:text-white transition">
 
             <i data-lucide="plus-circle" class="w-10 h-10 mb-5"></i>
 
@@ -278,7 +299,7 @@
 
         <button onclick="showSection('parking-section')"
 
-        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-blue-500 hover:text-white transition">
+        class="bg-white rounded-2xl shadow p-5 sm:p-8 text-left hover:bg-blue-500 hover:text-white transition">
 
             <i data-lucide="car-front" class="w-10 h-10 mb-5"></i>
             <h3 class="text-xl font-bold">
@@ -299,7 +320,7 @@
 
         <button onclick="showSection('booking-section')"
 
-        class="bg-white rounded-2xl shadow p-8 text-left hover:bg-purple-500 hover:text-white transition">
+        class="bg-white rounded-2xl shadow p-5 sm:p-8 text-left hover:bg-purple-500 hover:text-white transition">
 
             <i data-lucide="calendar-days" class="w-10 h-10 mb-5"></i>
 
@@ -462,11 +483,11 @@
 
 <section id="profile-section" class="page-section hidden">
 
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
                 My Profile
 
@@ -492,7 +513,7 @@
 
         <!-- Profile Card -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <div class="flex flex-col md:flex-row gap-8 items-center">
 
@@ -627,7 +648,7 @@
 
         <!-- Address -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">
 
@@ -645,7 +666,7 @@
 
         <!-- Password -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">Change Password</h2>
             <div class="grid md:grid-cols-3 gap-6">
@@ -683,7 +704,7 @@
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
                 Verification Documents
 
@@ -719,7 +740,7 @@
 
         <!-- Citizenship -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <div class="flex justify-between items-center mb-6">
 
@@ -770,7 +791,7 @@
 
         <!-- PAN -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <div class="flex justify-between items-center mb-6">
 
@@ -821,7 +842,7 @@
 
         <!-- Business Registration -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <div class="flex justify-between items-center mb-6">
 
@@ -872,7 +893,7 @@
 
         <!-- Parking License -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <div class="flex justify-between items-center mb-6">
 
@@ -923,7 +944,7 @@
 
         <!-- Bank Account -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">
 
@@ -992,11 +1013,11 @@
 
         <section id="add-parking-section" class="page-section hidden">
 
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
                 Add Parking Lot
             </h1>
 
@@ -1018,7 +1039,7 @@
 
         <!-- Basic Information -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">
                 Basic Information
@@ -1064,7 +1085,7 @@
 
   <!-- Location -->
 
-<div class="bg-white rounded-2xl shadow p-8">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
     <h2 class="text-2xl font-bold mb-6">
         Parking Location
@@ -1107,7 +1128,7 @@
 
         <!-- Capacity -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">
                 Capacity
@@ -1170,7 +1191,7 @@
 
         <!-- Pricing -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">
 
@@ -1234,7 +1255,7 @@
 
         <!-- Description -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">Description</h2>
 
@@ -1249,7 +1270,7 @@
 
         <!-- Upload Image -->
 
-        <div class="bg-white rounded-2xl shadow p-8">
+        <div class="bg-white rounded-2xl shadow p-5 sm:p-8">
 
             <h2 class="text-2xl font-bold mb-6">Parking Image</h2>
             <input type="file"name="parking_image"accept="image/*"class="w-full border rounded-xl p-3">
@@ -1259,7 +1280,7 @@
 
         <!-- Buttons -->
 
-        <div class="flex justify-end gap-4">
+        <div class="flex flex-col sm:flex-row justify-end gap-4">
 
             <button
                 type="reset"
@@ -1293,7 +1314,7 @@
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
 
         <div>
-            <h1 class="text-4xl font-bold">My Parking Lots</h1>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">My Parking Lots</h1>
             <p class="text-slate-500 mt-2">Manage all your registered parking spaces.</p>
         </div>
 
@@ -1413,7 +1434,7 @@
 
         <div class="col-span-full">
 
-            <div class="bg-white rounded-2xl shadow p-20 text-center">
+            <div class="bg-white rounded-2xl shadow p-10 sm:p-20 text-center">
 
                 <i
                     data-lucide="map-pinned"
@@ -1459,7 +1480,7 @@
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
                 Booking Management
 
@@ -1473,13 +1494,13 @@
 
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-3 w-full sm:w-auto">
 
             <input
                 id="bookingSearch"
                 type="text"
                 placeholder="Search booking..."
-                class="border rounded-xl px-4 py-3 w-72">
+                class="border rounded-xl px-4 py-3 w-full sm:w-72">
 
         </div>
 
@@ -1673,11 +1694,11 @@
 
     <!-- Header -->
 
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
                 Reports & Analytics
 
@@ -1708,7 +1729,7 @@
 
             </p>
 
-            <h2 class="text-4xl font-bold text-green-600 mt-3">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-600 mt-3">
 
                 Rs {{ today_earnings|default:"0" }}
 
@@ -1726,7 +1747,7 @@
 
             </p>
 
-            <h2 class="text-4xl font-bold text-blue-600 mt-3">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mt-3">
 
                 Rs {{ weekly_earnings|default:"0" }}
 
@@ -1744,7 +1765,7 @@
 
             </p>
 
-            <h2 class="text-4xl font-bold text-purple-600 mt-3">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-600 mt-3">
 
                 Rs {{ monthly_earnings|default:"0" }}
 
@@ -1762,7 +1783,7 @@
 
             </p>
 
-            <h2 class="text-4xl font-bold text-orange-600 mt-3">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-600 mt-3">
 
                 Rs {{ total_earnings|default:"0" }}
 
@@ -1920,7 +1941,7 @@
 
         <div>
 
-            <h1 class="text-4xl font-bold">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
                 Notifications
 
@@ -2160,7 +2181,7 @@
 
     <div class="mb-8">
 
-        <h1 class="text-4xl font-bold">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
 
             Settings
 
@@ -2177,7 +2198,7 @@
 
     <!-- Account Settings -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -2274,7 +2295,7 @@
 
     <!-- Security -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -2307,7 +2328,7 @@
 
     <!-- System -->
 
-    <div class="bg-white rounded-2xl shadow p-8 mb-8">
+    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
 
         <h2 class="text-2xl font-bold mb-6">
 
@@ -2372,7 +2393,7 @@
 
     <!-- Danger Zone -->
 
-    <div class="bg-red-50 border border-red-200 rounded-2xl p-8">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-5 sm:p-8">
 
         <h2 class="text-2xl font-bold text-red-600">
 
@@ -2386,7 +2407,7 @@
 
         </p>
 
-        <div class="flex gap-4 mt-6">
+        <div class="flex flex-col sm:flex-row gap-4 mt-6">
 
             <button
                 id="deleteAccountBtn"
@@ -2397,7 +2418,7 @@
             </button>
 
             <a href="{% url 'logout' %}"
-               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl">
+               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl text-center">
 
                 Logout
 
@@ -2413,13 +2434,13 @@
 <section id="change-password-section" class="page-section hidden">
 
 <div class="mb-8">
-    <h1 class="text-4xl font-bold">Change Password</h1>
+    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Change Password</h1>
     <p class="text-slate-500 mt-2">
         Update your account password securely.
     </p>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-8 max-w-2xl">
+<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
 
 <form method="POST" action="{% url 'change_password' %}">
 
@@ -2520,9 +2541,15 @@ function showSection(sectionId, event) {
     });
 
     // Highlight current button
-    if (event) {
+    if (event && event.currentTarget && event.currentTarget.classList.contains("menu-btn")) {
         event.currentTarget.classList.add("bg-emerald-500");
     }
+
+    // Scroll content back to top on section change
+    window.scrollTo({ top: 0, behavior: "instant" });
+
+    // Close the mobile sidebar drawer whenever a section is opened
+    closeSidebar();
 
     // ==========================
     // Refresh Leaflet Map
@@ -2537,6 +2564,52 @@ function showSection(sectionId, event) {
     }
 
 }
+
+// ==========================================
+// Mobile Sidebar Drawer
+// ==========================================
+
+const ownerSidebar = document.getElementById("ownerSidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+const sidebarToggle = document.getElementById("sidebarToggle");
+const sidebarClose = document.getElementById("sidebarClose");
+
+function openSidebar() {
+    if (!ownerSidebar) return;
+    ownerSidebar.classList.remove("-translate-x-full");
+    if (sidebarOverlay) sidebarOverlay.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+}
+
+function closeSidebar() {
+    if (!ownerSidebar) return;
+    // Only force-hide on mobile widths; lg+ sidebar always stays visible
+    if (window.innerWidth < 1024) {
+        ownerSidebar.classList.add("-translate-x-full");
+    }
+    if (sidebarOverlay) sidebarOverlay.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+}
+
+if (sidebarToggle) {
+    sidebarToggle.addEventListener("click", openSidebar);
+}
+
+if (sidebarClose) {
+    sidebarClose.addEventListener("click", closeSidebar);
+}
+
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener("click", closeSidebar);
+}
+
+// Keep sidebar state sane when resizing across the lg breakpoint
+window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024) {
+        if (sidebarOverlay) sidebarOverlay.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+    }
+});
 
 const bookingSearch = document.getElementById("bookingSearch");
 
@@ -2666,7 +2739,7 @@ if (clearBtn) {
             document.getElementById("notificationContainer").innerHTML =
 
             `
-            <div class="bg-white rounded-2xl shadow p-20 text-center">
+            <div class="bg-white rounded-2xl shadow p-10 sm:p-20 text-center">
 
                 <i data-lucide="bell-off"
                    class="mx-auto w-20 h-20 text-slate-300"></i>
