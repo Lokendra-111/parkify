@@ -126,7 +126,10 @@ def admin_dashboard(request):
 
     admin = Signup.objects.get(id=request.session['user_id'])
 
-    pending_owners = OwnerProfile.objects.filter(is_verified=False)
+    pending_owners = OwnerProfile.objects.filter(
+        is_verified=False,
+        ownerdocument__isnull=False
+    ).distinct().prefetch_related('ownerdocument_set')
 
     owners = OwnerProfile.objects.all()
 
@@ -163,13 +166,25 @@ def admin_dashboard(request):
 #Approve view
 def approve_owner(request, owner_id):
 
-    if request.session.get('role') != 'admin':
+    if not request.session.get('user_id') or request.session.get('role') != 'admin':
         return redirect('authentication')
 
-    owner = OwnerProfile.objects.get(id=owner_id)
+    if request.method != "POST":
+        return redirect('admin_dashboard')
+
+    owner = get_object_or_404(OwnerProfile, id=owner_id)
+
+    if not OwnerDocument.objects.filter(owner=owner).exists():
+        messages.error(
+            request,
+            "Cannot approve: this owner has not uploaded any documents yet."
+        )
+        return redirect('admin_dashboard')
 
     owner.is_verified = True
     owner.save()
+
+    OwnerDocument.objects.filter(owner=owner).update(status='Verified')
 
     messages.success(
         request,
@@ -181,13 +196,18 @@ def approve_owner(request, owner_id):
 #Reject view
 def reject_owner(request, owner_id):
 
-    if request.session.get('role') != 'admin':
+    if not request.session.get('user_id') or request.session.get('role') != 'admin':
         return redirect('authentication')
 
-    owner = OwnerProfile.objects.get(id=owner_id)
+    if request.method != "POST":
+        return redirect('admin_dashboard')
+
+    owner = get_object_or_404(OwnerProfile, id=owner_id)
 
     owner.is_verified = False
     owner.save()
+
+    OwnerDocument.objects.filter(owner=owner).update(status='Rejected')
 
     messages.error(
         request,
@@ -231,6 +251,7 @@ def owner_dashboard(request):
 
     document_exists = False
     verification_status = "Not Started"
+    uploaded_doc_types = set()
 
     if profile_exists:
         profile = OwnerProfile.objects.get(owner=owner)
@@ -247,6 +268,10 @@ def owner_dashboard(request):
             owner=profile
         ).exists()
 
+        uploaded_doc_types = set(
+            OwnerDocument.objects.filter(owner=profile).values_list('document_type', flat=True)
+        )
+
         if document_exists:
             verification_status = (
                 "Approved"
@@ -260,6 +285,7 @@ def owner_dashboard(request):
         'profile_exists': profile_exists,
         'document_exists': document_exists,
         'verification_status': verification_status,
+        'uploaded_doc_types': uploaded_doc_types,
     }
 
     return render(
@@ -277,23 +303,44 @@ def owner_profile(request):
         id=request.session['user_id']
     )
 
+    existing_profile = OwnerProfile.objects.filter(owner=owner_user).first()
+
     if request.method == "POST":
+
+        # Fields that live on Signup itself (name/email/photo), not OwnerProfile
+        owner_user.first_name = request.POST.get('first_name', owner_user.first_name)
+        owner_user.last_name = request.POST.get('last_name', owner_user.last_name)
+        owner_user.email = request.POST.get('email', owner_user.email)
+
+        if request.FILES.get('profile_image'):
+            owner_user.profile_image = request.FILES.get('profile_image')
+
+        owner_user.save()
+
+        def field(name):
+            # Not every form that posts here includes every OwnerProfile field
+            # (e.g. the dashboard's "My Profile" form has no company fields).
+            # Fall back to the value already on file so we never null it out.
+            value = request.POST.get(name)
+            if value not in (None, ''):
+                return value
+            return getattr(existing_profile, name, '') if existing_profile else ''
 
         OwnerProfile.objects.update_or_create(
             owner=owner_user,
 
             defaults={
-                'full_name': request.POST.get('full_name'),
-                'company_name': request.POST.get('company_name'),
-                'registration_no': request.POST.get('registration_no'),
-                'phone': request.POST.get('phone'),
-                'address': request.POST.get('address'),
+                'full_name': field('full_name'),
+                'company_name': field('company_name'),
+                'registration_no': field('registration_no'),
+                'phone': field('phone'),
+                'address': field('address'),
             }
         )
 
         messages.success(request,"Profile saved successfully.")
 
-        return redirect('owner_profile')
+        return redirect('owner_dashboard')
 
     return render(request,'owner_profile.html')
 
@@ -314,32 +361,41 @@ def owner_document(request):
     if request.method == "POST":
 
         document_mapping = {
-        'citizenship': 'Citizenship',
-        'pan_document': 'PAN Card',
-        'business_registration': 'Business Registration',
-        'parking_license': 'Parking License',
-    }
+            'citizenship': 'Citizenship',
+            'pan_document': 'PAN Card',
+            'business_registration': 'Business Registration',
+            'parking_license': 'Parking License',
+        }
 
-    for field_name, document_type in document_mapping.items():
+        uploaded_any = False
 
-        uploaded_file = request.FILES.get(field_name)
+        for field_name, document_type in document_mapping.items():
 
-        if uploaded_file:
-            OwnerDocument.objects.create(
-                owner=profile,
-                document_id=f"{document_type}-{profile.id}",
-                document_type=document_type,
-                file_url=uploaded_file
+            uploaded_file = request.FILES.get(field_name)
+
+            if uploaded_file:
+                OwnerDocument.objects.create(
+                    owner=profile,
+                    document_id=f"{document_type}-{profile.id}",
+                    document_type=document_type,
+                    file_url=uploaded_file
+                )
+                uploaded_any = True
+
+        if uploaded_any:
+            messages.success(
+                request,
+                "Documents uploaded successfully."
+            )
+        else:
+            messages.error(
+                request,
+                "Please select at least one document to upload."
             )
 
-    messages.success(
-        request,
-        "Documents uploaded successfully."
-    )
+        return redirect('owner_dashboard')
 
-    return redirect('owner_dashboard')
-
-    return render(request,'owner_document.html')
+    return render(request, 'owner_document.html')
 # Add Parking
 def add_parking(request):
 

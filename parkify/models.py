@@ -12,6 +12,7 @@ class Signup(models.Model):
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} ({self.role})"
