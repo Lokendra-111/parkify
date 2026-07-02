@@ -89,6 +89,15 @@
                     <span class="text-emerald-600 font-bold whitespace-nowrap">Rs {{ item.parking.rate_per_hour }}/hr</span>
                 </div>
 
+                {% if item.review_count > 0 %}
+                <p class="flex items-center gap-1 text-sm text-amber-600 font-medium mb-2">
+                    <i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-400"></i>
+                    {{ item.average_rating }} <span class="text-slate-400 font-normal">({{ item.review_count }} review{{ item.review_count|pluralize }})</span>
+                </p>
+                {% else %}
+                <p class="text-sm text-slate-400 mb-2">No reviews yet</p>
+                {% endif %}
+
                 <p class="text-slate-500 text-sm flex items-center gap-1 mb-4">
                     <i data-lucide="map-pin" class="w-4 h-4"></i>
                     {{ item.parking.location }}

@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if mode == 'edit' %}Edit Review{% else %}Write a Review{% endif %} | Parkify</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-100">
+
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="{% url 'dashboard' %}" class="text-2xl font-bold text-slate-900">Parkify</a>
+        <a href="{% url 'my_bookings' %}" class="text-slate-600 hover:text-emerald-600 font-medium flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to My Bookings
+        </a>
+    </div>
+</header>
+
+<main class="max-w-2xl mx-auto p-6">
+
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-xl {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl shadow-sm border p-8">
+
+        <h1 class="text-2xl font-bold mb-1">
+            {% if mode == 'edit' %}Edit Your Review{% else %}Rate Your Experience{% endif %}
+        </h1>
+
+        <p class="text-slate-500 mb-6 flex items-center gap-2">
+            <i data-lucide="parking-circle" class="w-4 h-4"></i>
+            {{ parking.parking_name }} &middot; Booking #{{ booking.id }} ({{ booking.booking_date }})
+        </p>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-2">Your Rating</label>
+
+                <div class="flex items-center gap-2" id="starPicker">
+                    {% for i in "12345" %}
+                    <button type="button" data-value="{{ i }}"
+                            class="star-btn text-4xl leading-none text-slate-300 hover:scale-110 transition"
+                            aria-label="{{ i }} star">&#9733;</button>
+                    {% endfor %}
+                </div>
+
+                <input type="hidden" name="rating" id="ratingInput"
+                       value="{% if review %}{{ review.rating }}{% endif %}" required>
+
+                <p class="text-sm text-slate-500 mt-1" id="ratingLabel">
+                    {% if review %}You rated {{ review.rating }} / 5{% else %}Tap a star to rate{% endif %}
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Your Review (optional)</label>
+                <textarea name="comment" rows="5" placeholder="Tell others what your experience was like..."
+                          class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500">{% if review %}{{ review.comment }}{% endif %}</textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-slate-900 hover:bg-emerald-600 transition text-white py-3 rounded-xl font-medium">
+                {% if mode == 'edit' %}Update Review{% else %}Submit Review{% endif %}
+            </button>
+
+        </form>
+
+    </div>
+
+</main>
+
+<script>
+lucide.createIcons();
+
+const stars = document.querySelectorAll('.star-btn');
+const ratingInput = document.getElementById('ratingInput');
+const ratingLabel = document.getElementById('ratingLabel');
+
+function paintStars(value) {
+    stars.forEach(star => {
+        const active = Number(star.dataset.value) <= value;
+        star.classList.toggle('text-amber-400', active);
+        star.classList.toggle('text-slate-300', !active);
+    });
+}
+
+const initial = Number(ratingInput.value) || 0;
+if (initial) paintStars(initial);
+
+stars.forEach(star => {
+    star.addEventListener('click', () => {
+        const value = Number(star.dataset.value);
+        ratingInput.value = value;
+        ratingLabel.textContent = 'You rated ' + value + ' / 5';
+        paintStars(value);
+    });
+
+    star.addEventListener('mouseenter', () => paintStars(Number(star.dataset.value)));
+    star.addEventListener('mouseleave', () => paintStars(Number(ratingInput.value) || 0));
+});
+</script>
+
+</body>
+</html>

@@ -67,6 +67,12 @@
                 Bookings
             </button>
 
+            <button onclick="showSection('reviews-section')"
+                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                <i data-lucide="star"></i>
+                Reviews
+            </button>
+
             <button onclick="showSection('verification-section')"
                 class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
                 <i data-lucide="badge-check"></i>
@@ -445,6 +451,73 @@
                                 {% empty %}
                                 <tr>
                                     <td colspan="9" class="text-center py-10 text-slate-500">No bookings found.</td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reviews -->
+            <section id="reviews-section" class="hidden">
+
+                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
+
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6">All Reviews</h2>
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full min-w-[1100px]">
+
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="text-left p-4">ID</th>
+                                    <th class="text-left p-4">Parking Lot</th>
+                                    <th class="text-left p-4">User</th>
+                                    <th class="text-left p-4">Rating</th>
+                                    <th class="text-left p-4">Comment</th>
+                                    <th class="text-left p-4">Owner Reply</th>
+                                    <th class="text-left p-4">Date</th>
+                                    <th class="text-left p-4">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for review in reviews %}
+                                <tr class="border-b hover:bg-slate-50 transition align-top">
+
+                                    <td class="p-4">#{{ review.id }}</td>
+                                    <td class="p-4 font-medium">{{ review.parking.parking_name }}</td>
+                                    <td class="p-4">{{ review.user.username }}</td>
+                                    <td class="p-4 text-amber-500 whitespace-nowrap">
+                                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}<span class="text-slate-300">&#9733;</span>{% endif %}{% endfor %}
+                                    </td>
+                                    <td class="p-4 max-w-xs">{{ review.comment|default:"—" }}</td>
+                                    <td class="p-4 max-w-xs">
+                                        {% if review.owner_reply %}
+                                        <span class="text-slate-600">{{ review.owner_reply }}</span>
+                                        {% else %}
+                                        <span class="text-slate-400">No reply yet</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="p-4 whitespace-nowrap">{{ review.created_at|date:"M d, Y" }}</td>
+                                    <td class="p-4">
+                                        <form method="POST" action="{% url 'admin_delete_review' review.id %}"
+                                              onsubmit="return confirm('Permanently remove this review?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm">
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </td>
+
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-10 text-slate-500">No reviews yet.</td>
                                 </tr>
                                 {% endfor %}
 
@@ -873,6 +946,7 @@ function showSection(section){
         'owners-section',
         'parking-section',
         'bookings-section',
+        'reviews-section',
         'verification-section',
         'setting-section',
         'change-password-section',

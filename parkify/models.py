@@ -81,6 +81,12 @@ class ParkingLot(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def average_rating(self):
+        result = self.reviews.aggregate(avg=models.Avg('rating'))['avg']
+        return round(result, 1) if result else 0
+
+    def review_count(self):
+        return self.reviews.count()
 
 
  #Bookings module   
@@ -154,3 +160,45 @@ class PaymentTransaction(models.Model):
 
     def __str__(self):
         return f"{self.txn_id} - {self.status}"
+
+
+# Review & Rating module
+class Review(models.Model):
+
+    RATING_CHOICES = [
+        (5, '5 - Excellent'),
+        (4, '4 - Good'),
+        (3, '3 - Average'),
+        (2, '2 - Poor'),
+        (1, '1 - Terrible'),
+    ]
+
+    parking = models.ForeignKey(
+        ParkingLot, on_delete=models.CASCADE, related_name='reviews'
+    )
+
+    user = models.ForeignKey(
+        Signup, on_delete=models.CASCADE, related_name='reviews'
+    )
+
+    # One review per completed booking - also stops a user reviewing
+    # a lot they never actually parked at.
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name='review'
+    )
+
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
+
+    comment = models.TextField(blank=True)
+
+    owner_reply = models.TextField(blank=True, null=True)
+    replied_at = models.DateTimeField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.rating}★ by {self.user.username} on {self.parking.parking_name}"

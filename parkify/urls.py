@@ -37,10 +37,18 @@ urlpatterns = [
     path('payment/<int:booking_id>/process/', views.process_payment, name='process_payment'),
     path('payment/receipt/<str:txn_id>/', views.payment_receipt, name='payment_receipt'),
 
+    # ---- Review & Rating module ----
+    path('booking/<int:booking_id>/review/', views.submit_review, name='submit_review'),
+    path('review/<int:review_id>/edit/', views.edit_review, name='edit_review'),
+    path('review/<int:review_id>/delete/', views.delete_review, name='delete_review'),
+    path('parking/<int:parking_id>/reviews/', views.parking_reviews, name='parking_reviews'),
+    path('review/<int:review_id>/reply/', views.owner_reply_review, name='owner_reply_review'),
+
     # ---- Admin: manage bookings & parking lots ----
     path('admin-dashboard/booking/<int:booking_id>/update/', views.admin_update_booking, name='admin_update_booking'),
     path('admin-dashboard/parking/<int:parking_id>/toggle/', views.admin_toggle_parking, name='admin_toggle_parking'),
     path('admin-dashboard/parking/<int:parking_id>/delete/', views.admin_delete_parking, name='admin_delete_parking'),
+    path('admin-dashboard/review/<int:review_id>/delete/', views.admin_delete_review, name='admin_delete_review'),
 
 
 # ----change password

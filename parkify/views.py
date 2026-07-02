@@ -8,11 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
+from django.utils import timezone
 from datetime import datetime, date
 from math import ceil
 import random
 import string
-from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction
+from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review
 from .tokens import signup_token_generator
 
 # Landing Page
@@ -143,6 +144,8 @@ def admin_dashboard(request):
 
     active_bookings_count = Booking.objects.filter(status='Active').count()
 
+    reviews = Review.objects.select_related('parking', 'user').all()
+
     context = {
         'admin': admin,
         'pending_owners': pending_owners,
@@ -152,6 +155,7 @@ def admin_dashboard(request):
         'status_filter': status_filter,
         'total_revenue': total_revenue,
         'active_bookings_count': active_bookings_count,
+        'reviews': reviews,
     }
 
     return render(request, 'admin_dashboard.html', context)
@@ -234,6 +238,10 @@ def owner_dashboard(request):
         parkings = ParkingLot.objects.filter(
             owner=profile
         ).order_by('-created_at')
+
+        for parking in parkings:
+            parking.avg_rating = parking.average_rating()
+            parking.rating_count = parking.review_count()
 
         document_exists = OwnerDocument.objects.filter(
             owner=profile
@@ -436,6 +444,10 @@ def my_parking_lots(request):
     profile = OwnerProfile.objects.get(owner=owner_user)
     parkings = ParkingLot.objects.filter(owner=profile).order_by('-created_at')
 
+    for parking in parkings:
+        parking.avg_rating = parking.average_rating()
+        parking.rating_count = parking.review_count()
+
     return render(request,'my_parking_lots.html',{'parkings': parkings})
 
 #edit
@@ -518,12 +530,17 @@ def view_parking(request, parking_id):
         status__in=['Pending', 'Active']
     ).count()
 
+    reviews = parking.reviews.select_related('user').all()
+
     context = {
         'parking': parking,
         'today': today,
         'car_available': max(parking.car_capacity - car_booked, 0),
         'bike_available': max(parking.bike_capacity - bike_booked, 0),
         'logged_in': bool(request.session.get('user_id')),
+        'reviews': reviews,
+        'average_rating': parking.average_rating(),
+        'review_count': parking.review_count(),
     }
 
     return render(request,'view_parking.html', context)
@@ -579,6 +596,8 @@ def browse_parking(request):
             'parking': parking,
             'car_available': car_available,
             'bike_available': bike_available,
+            'average_rating': parking.average_rating(),
+            'review_count': parking.review_count(),
         })
 
     context = {
@@ -868,15 +887,199 @@ def admin_delete_parking(request, parking_id):
     messages.success(request, f"{name} has been removed by admin.")
 
     return redirect('admin_dashboard')
+
+
+def admin_delete_review(request, review_id):
+
+    if request.session.get('role') != 'admin':
+        return redirect('authentication')
+
+    review = get_object_or_404(Review, id=review_id)
+    review.delete()
+
+    messages.success(request, "Review removed by admin.")
+
+    return redirect('admin_dashboard')
 #my bookings
 def my_bookings(request):
 
     if not request.session.get('user_id'):
         return redirect('authentication')
 
-    bookings = Booking.objects.filter(user_id=request.session['user_id']).order_by('-created_at')
+    bookings = Booking.objects.filter(
+        user_id=request.session['user_id']
+    ).select_related('review').order_by('-created_at')
+
+    for booking in bookings:
+        booking.existing_review = getattr(booking, 'review', None)
+        booking.can_review = (
+            booking.status == 'Completed' and booking.existing_review is None
+        )
 
     return render(request,'my_bookings.html',{'bookings': bookings})
+# ---- Review & Rating module ----
+
+def _get_parking_for_booking(booking):
+    """
+    Booking stores the lot name as plain text rather than a FK, so resolve
+    the actual ParkingLot row it refers to.
+    """
+    return ParkingLot.objects.filter(parking_name=booking.parking_name).first()
+
+
+def submit_review(request, booking_id):
+
+    if not request.session.get('user_id'):
+        messages.error(request, "Please login to write a review.")
+        return redirect('authentication')
+
+    booking = get_object_or_404(
+        Booking, id=booking_id, user_id=request.session['user_id']
+    )
+
+    if booking.status != 'Completed':
+        messages.error(request, "You can only review completed bookings.")
+        return redirect('my_bookings')
+
+    if Review.objects.filter(booking=booking).exists():
+        messages.error(request, "You have already reviewed this booking.")
+        return redirect('my_bookings')
+
+    parking = _get_parking_for_booking(booking)
+
+    if not parking:
+        messages.error(request, "This parking lot is no longer available.")
+        return redirect('my_bookings')
+
+    if request.method == "POST":
+
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
+
+        if rating not in ('1', '2', '3', '4', '5'):
+            messages.error(request, "Please select a rating between 1 and 5.")
+            return redirect('submit_review', booking_id=booking.id)
+
+        Review.objects.create(
+            parking=parking,
+            user_id=request.session['user_id'],
+            booking=booking,
+            rating=int(rating),
+            comment=comment,
+        )
+
+        messages.success(request, "Thank you! Your review has been posted.")
+        return redirect('my_bookings')
+
+    return render(
+        request,
+        'write_review.html',
+        {'booking': booking, 'parking': parking, 'mode': 'create'}
+    )
+
+
+def edit_review(request, review_id):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    review = get_object_or_404(
+        Review, id=review_id, user_id=request.session['user_id']
+    )
+
+    if request.method == "POST":
+
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
+
+        if rating not in ('1', '2', '3', '4', '5'):
+            messages.error(request, "Please select a rating between 1 and 5.")
+            return redirect('edit_review', review_id=review.id)
+
+        review.rating = int(rating)
+        review.comment = comment
+        review.save()
+
+        messages.success(request, "Your review has been updated.")
+        return redirect('my_bookings')
+
+    return render(
+        request,
+        'write_review.html',
+        {
+            'booking': review.booking,
+            'parking': review.parking,
+            'review': review,
+            'mode': 'edit',
+        }
+    )
+
+
+def delete_review(request, review_id):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    review = get_object_or_404(
+        Review, id=review_id, user_id=request.session['user_id']
+    )
+
+    review.delete()
+
+    messages.success(request, "Your review has been deleted.")
+    return redirect('my_bookings')
+
+
+# Owner: view & reply to reviews left for one of their parking lots
+def parking_reviews(request, parking_id):
+
+    if request.session.get('role') != 'owner':
+        return redirect('authentication')
+
+    owner_user = Signup.objects.get(id=request.session['user_id'])
+    profile = OwnerProfile.objects.get(owner=owner_user)
+
+    parking = get_object_or_404(ParkingLot, id=parking_id, owner=profile)
+
+    reviews = parking.reviews.select_related('user').all()
+
+    context = {
+        'parking': parking,
+        'reviews': reviews,
+        'average_rating': parking.average_rating(),
+        'review_count': parking.review_count(),
+    }
+
+    return render(request, 'owner_reviews.html', context)
+
+
+def owner_reply_review(request, review_id):
+
+    if request.session.get('role') != 'owner':
+        return redirect('authentication')
+
+    owner_user = Signup.objects.get(id=request.session['user_id'])
+    profile = OwnerProfile.objects.get(owner=owner_user)
+
+    review = get_object_or_404(Review, id=review_id, parking__owner=profile)
+
+    if request.method == "POST":
+
+        reply_text = request.POST.get('owner_reply', '').strip()
+
+        if not reply_text:
+            messages.error(request, "Reply cannot be empty.")
+            return redirect('parking_reviews', parking_id=review.parking.id)
+
+        review.owner_reply = reply_text
+        review.replied_at = timezone.now()
+        review.save()
+
+        messages.success(request, "Your reply has been posted.")
+
+    return redirect('parking_reviews', parking_id=review.parking.id)
+
+
 # Logout
 def logout_view(request):
     request.session.flush()
