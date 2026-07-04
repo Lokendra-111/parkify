@@ -44,6 +44,11 @@ urlpatterns = [
     path('parking/<int:parking_id>/reviews/', views.parking_reviews, name='parking_reviews'),
     path('review/<int:review_id>/reply/', views.owner_reply_review, name='owner_reply_review'),
 
+    # ---- Owner notifications ----
+    path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notifications/clear/', views.clear_notifications, name='clear_notifications'),
+
     # ---- Admin: manage bookings & parking lots ----
     path('admin-dashboard/booking/<int:booking_id>/update/', views.admin_update_booking, name='admin_update_booking'),
     path('admin-dashboard/parking/<int:parking_id>/toggle/', views.admin_toggle_parking, name='admin_toggle_parking'),

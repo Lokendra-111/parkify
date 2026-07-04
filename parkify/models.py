@@ -203,3 +203,34 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.rating}★ by {self.user.username} on {self.parking.parking_name}"
+
+
+# Owner notifications - fired on new bookings and new reviews
+class Notification(models.Model):
+
+    TYPE_CHOICES = [
+        ('booking', 'Booking'),
+        ('review', 'Review'),
+    ]
+
+    recipient = models.ForeignKey(
+        Signup, on_delete=models.CASCADE, related_name='notifications'
+    )
+
+    notif_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+
+    # Relative URL to send the owner to when they click the notification.
+    link = models.CharField(max_length=255, blank=True)
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.notif_type}] {self.title} -> {self.recipient.username}"

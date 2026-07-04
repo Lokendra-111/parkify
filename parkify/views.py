@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import models
 from django.db.models import Sum
+from django.http import JsonResponse
+from django.urls import reverse
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -13,8 +15,25 @@ from datetime import datetime, date
 from math import ceil
 import random
 import string
-from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review
+from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review,Notification
 from .tokens import signup_token_generator
+
+
+def _notify_owner(parking, notif_type, title, message, link=''):
+    """
+    Create an in-app notification for the owner of a parking lot.
+    Silently no-ops if the lot has no resolvable owner account.
+    """
+    if not parking or not parking.owner or not parking.owner.owner:
+        return
+
+    Notification.objects.create(
+        recipient=parking.owner.owner,
+        notif_type=notif_type,
+        title=title,
+        message=message,
+        link=link,
+    )
 
 # Landing Page
 def home(request):
@@ -279,6 +298,9 @@ def owner_dashboard(request):
                 else "Pending"
             )
 
+    notifications = Notification.objects.filter(recipient=owner).order_by('-created_at')
+    unread_notification_count = notifications.filter(is_read=False).count()
+
     context = {
         'owner': owner,
         'parkings': parkings,
@@ -286,6 +308,8 @@ def owner_dashboard(request):
         'document_exists': document_exists,
         'verification_status': verification_status,
         'uploaded_doc_types': uploaded_doc_types,
+        'notifications': notifications,
+        'unread_notification_count': unread_notification_count,
     }
 
     return render(
@@ -756,6 +780,16 @@ def book_parking(request, parking_id):
         user=user, parking_name=parking.parking_name
     ).order_by('-created_at').first()
 
+    _notify_owner(
+        parking,
+        'booking',
+        'New Booking Received',
+        f"{vehicle_number} ({vehicle_type}) booked {parking.parking_name} on "
+        f"{booking_date.strftime('%b %d, %Y')} from {check_in.strftime('%I:%M %p')} "
+        f"to {check_out.strftime('%I:%M %p')}. Amount: Rs {amount}.",
+        link=reverse('my_parking_lots'),
+    )
+
     return redirect('payment_page', booking_id=booking.id)
 
 
@@ -1024,6 +1058,16 @@ def submit_review(request, booking_id):
             comment=comment,
         )
 
+        _notify_owner(
+            parking,
+            'review',
+            'New Review Received',
+            f"{request.session.get('username', 'A user')} left a {rating}\u2605 "
+            f"review on {parking.parking_name}"
+            + (f": \"{comment}\"" if comment else "."),
+            link=reverse('parking_reviews', args=[parking.id]),
+        )
+
         messages.success(request, "Thank you! Your review has been posted.")
         return redirect('my_bookings')
 
@@ -1134,6 +1178,45 @@ def owner_reply_review(request, review_id):
         messages.success(request, "Your reply has been posted.")
 
     return redirect('parking_reviews', parking_id=review.parking.id)
+
+
+# ---- Owner notifications ----
+
+def mark_notification_read(request, notification_id):
+
+    if request.session.get('role') != 'owner':
+        return JsonResponse({'error': 'unauthorized'}, status=403)
+
+    notif = get_object_or_404(
+        Notification, id=notification_id, recipient_id=request.session['user_id']
+    )
+
+    notif.is_read = True
+    notif.save(update_fields=['is_read'])
+
+    return JsonResponse({'status': 'ok'})
+
+
+def mark_all_notifications_read(request):
+
+    if request.session.get('role') != 'owner':
+        return JsonResponse({'error': 'unauthorized'}, status=403)
+
+    Notification.objects.filter(
+        recipient_id=request.session['user_id'], is_read=False
+    ).update(is_read=True)
+
+    return JsonResponse({'status': 'ok'})
+
+
+def clear_notifications(request):
+
+    if request.session.get('role') != 'owner':
+        return JsonResponse({'error': 'unauthorized'}, status=403)
+
+    Notification.objects.filter(recipient_id=request.session['user_id']).delete()
+
+    return JsonResponse({'status': 'ok'})
 
 
 # Logout

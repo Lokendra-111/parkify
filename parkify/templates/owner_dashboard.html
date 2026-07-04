@@ -79,6 +79,9 @@
             <button onclick="showSection('notification-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800">
                 <i data-lucide="bell"></i>
                 Notifications
+                {% if unread_notification_count > 0 %}
+                <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ unread_notification_count }}</span>
+                {% endif %}
             </button>
 
             <button onclick="showSection('setting-section', event)" class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
@@ -1984,206 +1987,51 @@
 
     <div id="notificationContainer" class="space-y-6">
 
+        {% for note in notifications %}
 
-        <!-- Booking -->
+        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 {% if note.notif_type == 'booking' %}border-blue-500{% elif note.notif_type == 'review' %}border-amber-500{% else %}border-slate-400{% endif %} {% if note.is_read %}opacity-60{% endif %}"
+             data-id="{{ note.id }}">
 
-        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-blue-500">
+            <div class="flex justify-between gap-4">
 
-            <div class="flex justify-between">
-
-                <div>
+                <a href="{% if note.link %}{{ note.link }}{% else %}#{% endif %}" class="flex-1">
 
                     <h2 class="font-bold text-xl">
-
-                        🚗 New Booking Received
-
+                        {% if note.notif_type == 'booking' %}🚗{% elif note.notif_type == 'review' %}⭐{% endif %}
+                        {{ note.title }}
                     </h2>
 
                     <p class="text-slate-500 mt-2">
-
-                        Vehicle BA 12 PA 1234 booked your parking.
-
+                        {{ note.message }}
                     </p>
 
                     <small class="text-slate-400">
-
-                        2 minutes ago
-
+                        {{ note.created_at|timesince }} ago
                     </small>
 
-                </div>
+                </a>
 
-                <button class="markRead text-blue-600 font-semibold">
-
+                {% if not note.is_read %}
+                <button class="markRead text-blue-600 font-semibold whitespace-nowrap">
                     Mark Read
-
                 </button>
+                {% else %}
+                <span class="text-slate-400 text-sm whitespace-nowrap">Read</span>
+                {% endif %}
 
             </div>
 
         </div>
 
+        {% empty %}
 
-        <!-- Payment -->
-
-        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-green-500">
-
-            <div class="flex justify-between">
-
-                <div>
-
-                    <h2 class="font-bold text-xl">
-
-                        💰 Payment Received
-
-                    </h2>
-
-                    <p class="text-slate-500 mt-2">
-
-                        Rs {{ monthly_earnings }} has been received.
-
-                    </p>
-
-                    <small class="text-slate-400">
-
-                        Today
-
-                    </small>
-
-                </div>
-
-                <button class="markRead text-green-600 font-semibold">
-
-                    Mark Read
-
-                </button>
-
-            </div>
-
+        <div class="bg-white rounded-2xl shadow p-10 sm:p-20 text-center">
+            <i data-lucide="bell-off" class="mx-auto w-20 h-20 text-slate-300"></i>
+            <h2 class="text-3xl font-bold mt-6">No Notifications</h2>
+            <p class="text-slate-500 mt-3">You're all caught up!</p>
         </div>
 
-
-        <!-- Verification -->
-
-        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-yellow-500">
-
-            <div class="flex justify-between">
-
-                <div>
-
-                    <h2 class="font-bold text-xl">
-
-                        📄 Verification Status
-
-                    </h2>
-
-                    <p class="text-slate-500 mt-2">
-
-                        Current Status:
-
-                        <strong>
-
-                            {{ verification_status }}
-
-                        </strong>
-
-                    </p>
-
-                    <small class="text-slate-400">
-
-                        Yesterday
-
-                    </small>
-
-                </div>
-
-                <button class="markRead text-yellow-600 font-semibold">
-
-                    Mark Read
-
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- Booking Completed -->
-
-        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-purple-500">
-
-            <div class="flex justify-between">
-
-                <div>
-
-                    <h2 class="font-bold text-xl">
-
-                        ✅ Booking Completed
-
-                    </h2>
-
-                    <p class="text-slate-500 mt-2">
-
-                        Parking session completed successfully.
-
-                    </p>
-
-                    <small class="text-slate-400">
-
-                        1 day ago
-
-                    </small>
-
-                </div>
-
-                <button class="markRead text-purple-600 font-semibold">
-
-                    Mark Read
-
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- Approval -->
-
-        <div class="notification-card bg-white rounded-2xl shadow p-6 border-l-4 border-emerald-500">
-
-            <div class="flex justify-between">
-
-                <div>
-
-                    <h2 class="font-bold text-xl">
-
-                        🎉 Parking Approved
-
-                    </h2>
-
-                    <p class="text-slate-500 mt-2">
-
-                        Your parking lot has been approved by the administrator.
-
-                    </p>
-
-                    <small class="text-slate-400">
-
-                        3 days ago
-
-                    </small>
-
-                </div>
-
-                <button class="markRead text-emerald-600 font-semibold">
-
-                    Mark Read
-
-                </button>
-
-            </div>
-
-        </div>
+        {% endfor %}
 
     </div>
 
@@ -2724,19 +2572,35 @@ if(occupancyCanvas){
 // Notification Functions
 // =====================================
 
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
+const csrftoken = getCookie('csrftoken');
+
 document.querySelectorAll(".markRead").forEach(button => {
 
     button.addEventListener("click", function () {
 
         const card = this.closest(".notification-card");
+        const notificationId = card.dataset.id;
 
-        card.classList.remove("shadow");
-
-        card.classList.add("opacity-60");
-
-        this.innerHTML = "Read";
-
-        this.disabled = true;
+        fetch(`/notifications/${notificationId}/read/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                card.classList.remove("shadow");
+                card.classList.add("opacity-60");
+                this.outerHTML = '<span class="text-slate-400 text-sm whitespace-nowrap">Read</span>';
+            }
+        })
+        .catch(() => {});
 
     });
 
@@ -2750,30 +2614,42 @@ if (clearBtn) {
 
         if (confirm("Clear all notifications?")) {
 
-            document.getElementById("notificationContainer").innerHTML =
+            fetch("/notifications/clear/", {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+            })
+            .then(res => res.json())
+            .then(data => {
 
-            `
-            <div class="bg-white rounded-2xl shadow p-10 sm:p-20 text-center">
+                if (data.status === "ok") {
 
-                <i data-lucide="bell-off"
-                   class="mx-auto w-20 h-20 text-slate-300"></i>
+                    document.getElementById("notificationContainer").innerHTML =
+                    `
+                    <div class="bg-white rounded-2xl shadow p-10 sm:p-20 text-center">
 
-                <h2 class="text-3xl font-bold mt-6">
+                        <i data-lucide="bell-off"
+                           class="mx-auto w-20 h-20 text-slate-300"></i>
 
-                    No Notifications
+                        <h2 class="text-3xl font-bold mt-6">
 
-                </h2>
+                            No Notifications
 
-                <p class="text-slate-500 mt-3">
+                        </h2>
 
-                    You're all caught up!
+                        <p class="text-slate-500 mt-3">
 
-                </p>
+                            You're all caught up!
 
-            </div>
-            `;
+                        </p>
 
-            lucide.createIcons();
+                    </div>
+                    `;
+
+                    lucide.createIcons();
+                }
+
+            })
+            .catch(() => {});
 
         }
 
