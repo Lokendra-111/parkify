@@ -30,6 +30,7 @@ urlpatterns = [
     # ---- Search & Booking module ----
     path('browse-parking/', views.browse_parking, name='browse_parking'),
     path('parking/<int:parking_id>/book/', views.book_parking, name='book_parking'),
+    path('map/', views.map_search, name='map_search'),
     path('booking/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
 
     # ---- Payment module ----
@@ -55,7 +56,11 @@ urlpatterns = [
     path('admin-dashboard/parking/<int:parking_id>/delete/', views.admin_delete_parking, name='admin_delete_parking'),
     path('admin-dashboard/review/<int:review_id>/delete/', views.admin_delete_review, name='admin_delete_review'),
 
-
-# ----change password
+    # ---- Change password ----
     path("change-password/",views.change_password,name="change_password"),
+
+    # ---- Saved locations ----
+    path("saved-locations/", views.saved_locations_list, name="saved_locations_list"),
+    path("saved-locations/<int:parking_id>/toggle/", views.saved_locations_toggle, name="saved_locations_toggle"),
+    path("saved-locations/<int:saved_id>/remove/", views.saved_location_remove, name="saved_location_remove"),
 ]

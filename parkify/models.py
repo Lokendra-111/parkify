@@ -90,6 +90,23 @@ class ParkingLot(models.Model):
         return self.reviews.count()
 
 
+ # Saved Locations
+class SavedLocation(models.Model):
+
+    user = models.ForeignKey(Signup, on_delete=models.CASCADE, related_name='saved_locations')
+
+    parking = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, related_name='saved_by_users')
+
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'parking')
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.parking.parking_name}"
+
+
  #Bookings module   
 class Booking(models.Model):
 

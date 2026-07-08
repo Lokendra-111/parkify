@@ -1,1089 +1,517 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parkify Admin Dashboard</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        ::-webkit-scrollbar{
-            width:8px;
-        }
-        ::-webkit-scrollbar-thumb{
-            background:#94a3b8;
-            border-radius:10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkify | Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .fade-in { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+</style>
 </head>
+<body class="bg-slate-50 text-slate-900">
 
-<body class="bg-slate-100">
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200/70">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex items-center justify-between h-14 sm:h-16 gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="text-lg sm:text-xl font-extrabold tracking-tight">Parkify</span>
+        <span class="hidden sm:inline-flex items-center rounded-full bg-slate-900 text-white px-2.5 py-1 text-xs font-bold">Admin</span>
+      </div>
 
-<div class="flex min-h-screen">
+      <nav class="hidden md:flex items-center gap-1 bg-slate-100/80 rounded-xl p-1 overflow-x-auto">
+        <button onclick="showSection('dashboard-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Overview</button>
+        <button onclick="showSection('owners-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Owners</button>
+        <button onclick="showSection('parking-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Parking</button>
+        <button onclick="showSection('bookings-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Bookings</button>
+        <button onclick="showSection('reviews-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Reviews</button>
+        <button onclick="showSection('verification-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Verify</button>
+        <button onclick="showSection('setting-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Settings</button>
+      </nav>
 
-    <!-- Mobile Overlay -->
-    <div id="overlay" class="fixed inset-0 bg-black/40 hidden z-40 lg:hidden"></div>
-
-    <!-- Sidebar -->
-    <aside id="sidebar"
-        class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-all duration-300 z-50 flex flex-col shadow-2xl">
-
-        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-emerald-400">Parkify</h1>
-                <p class="text-slate-400 text-sm mt-1">Admin Control Center</p>
-            </div>
-
-            <button id="sidebarClose" class="lg:hidden p-2 rounded-lg hover:bg-slate-800" aria-label="Close menu">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button class="bg-slate-100 p-2.5 rounded-full hover:bg-slate-200 transition md:hidden" aria-label="Menu" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+          <i data-lucide="menu" class="w-4 h-4 text-slate-700"></i>
+        </button>
+        <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5">
+          <div class="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold">{{ admin.first_name|slice:"0:1" }}</div>
+          <span class="hidden sm:block text-sm font-semibold leading-tight truncate max-w-[120px]">{{ admin.first_name }} {{ admin.last_name }}</span>
         </div>
+        <a href="{% url 'logout' %}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition">Logout</a>
+      </div>
+    </div>
 
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+    <div id="mobileMenu" class="hidden md:hidden pb-4">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="showSection('dashboard-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Overview</button>
+        <button onclick="showSection('owners-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Owners</button>
+        <button onclick="showSection('parking-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Parking</button>
+        <button onclick="showSection('bookings-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Bookings</button>
+        <button onclick="showSection('reviews-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Reviews</button>
+        <button onclick="showSection('verification-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Verify</button>
+        <button onclick="showSection('setting-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Settings</button>
+        <a href="{% url 'logout' %}" class="text-left rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
 
-            <button onclick="showSection('dashboard-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="layout-dashboard"></i>
-                Dashboard
-            </button>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
 
-            <button onclick="showSection('owners-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="users"></i>
-                Owners
-            </button>
+  <section id="dashboard-section" class="fade-in">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Welcome back, {{ admin.first_name }}</h1>
+        <p class="mt-1 text-slate-500">Platform overview and recent activity.</p>
+      </div>
+    </div>
 
-            <button onclick="showSection('parking-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="car"></i>
-                Parking Lots
-            </button>
+    <div class="mt-6 grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Owners</p>
+        <p class="mt-2 text-3xl font-bold">{{ owners|length }}</p>
+      </div>
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Parking Lots</p>
+        <p class="mt-2 text-3xl font-bold">{{ parking_lots|length }}</p>
+      </div>
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending Owners</p>
+        <p class="mt-2 text-3xl font-bold text-amber-600">{{ pending_owners|length }}</p>
+      </div>
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Active Bookings</p>
+        <p class="mt-2 text-3xl font-bold text-blue-600">{{ active_bookings_count }}</p>
+      </div>
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Revenue</p>
+        <p class="mt-2 text-3xl font-bold text-emerald-700">Rs {{ total_revenue }}</p>
+      </div>
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">System Status</p>
+        <p class="mt-2 text-3xl font-bold text-emerald-700">Online</p>
+      </div>
+    </div>
+  </section>
 
-            <button onclick="showSection('bookings-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="calendar-check"></i>
-                Bookings
-            </button>
+  <section id="owners-section" class="hidden">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Owners</h1>
+        <p class="mt-1 text-slate-500">{{ owners|length }} registered owner{{ owners|length|pluralize }}.</p>
+      </div>
+    </div>
 
-            <button onclick="showSection('reviews-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="star"></i>
-                Reviews
-            </button>
+    <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px]">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Owner</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Company</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Phone</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for owner in owners %}
+            <tr class="border-b hover:bg-slate-50 transition">
+              <td class="p-4 font-medium whitespace-nowrap">{{ owner.full_name }}</td>
+              <td class="p-4 whitespace-nowrap">{{ owner.company_name }}</td>
+              <td class="p-4 whitespace-nowrap">{{ owner.phone }}</td>
+              <td class="p-4 whitespace-nowrap">
+                {% if owner.is_verified %}
+                <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 text-xs font-semibold">Verified</span>
+                {% else %}
+                <span class="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 text-xs font-semibold">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="p-6 text-center text-slate-500">No owners registered.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-            <button onclick="showSection('verification-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="badge-check"></i>
-                Verification
-            </button>
+  <section id="parking-section" class="hidden">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Parking Lots</h1>
+        <p class="mt-1 text-slate-500">{{ parking_lots|length }} lot{{ parking_lots|length|pluralize }}.</p>
+      </div>
+    </div>
 
-            <button onclick="showSection('setting-section')"
-                class="menu-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
-                <i data-lucide="settings"></i>
-                Settings
-            </button>
-
-        </nav>
-
-        <div class="p-5 border-t border-slate-800">
-            <a href="{% url 'logout' %}"
-               class="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 py-3 rounded-xl transition">
-                <i data-lucide="log-out"></i>
-                Logout
-            </a>
+    <div class="mt-6 grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+      {% for parking in parking_lots %}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-xl transition">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-bold">{{ parking.parking_name }}</h3>
+            <p class="text-sm text-slate-500 mt-1">{{ parking.location }}</p>
+          </div>
+          {% if parking.is_active %}
+          <span class="inline-flex rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 text-xs font-semibold">Active</span>
+          {% else %}
+          <span class="inline-flex rounded-full bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-semibold">Inactive</span>
+          {% endif %}
         </div>
+        <div class="mt-4 space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">Owner</span><span class="font-medium">{{ parking.owner.full_name }}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Rate</span><span class="font-medium">Rs {{ parking.rate_per_hour }}/hr</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Capacity</span><span class="font-medium">{{ parking.car_capacity }} cars / {{ parking.bike_capacity }} bikes</span></div>
+        </div>
+        <div class="mt-5 flex flex-col sm:flex-row gap-2">
+          <form method="POST" action="{% url 'admin_toggle_parking' parking.id %}" class="flex-1">
+            {% csrf_token %}
+            <button type="submit" class="w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold hover:bg-slate-50 transition">
+              {% if parking.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+          <form method="POST" action="{% url 'admin_delete_parking' parking.id %}" class="flex-1" onsubmit="return confirm('Permanently delete this parking lot?');">
+            {% csrf_token %}
+            <button type="submit" class="w-full rounded-xl bg-red-600 text-white py-2.5 text-sm font-semibold hover:bg-red-700 transition">Delete</button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-full text-center py-16 text-slate-500">No parking lots available.</div>
+      {% endfor %}
+    </div>
+  </section>
 
-    </aside>
+  <section id="bookings-section" class="hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Bookings</h1>
+        <p class="mt-1 text-slate-500">Oversight and status management.</p>
+      </div>
+      <form method="GET" class="flex items-center gap-2">
+        <input type="hidden" name="section" value="bookings-section">
+        <select name="status" onchange="this.form.submit()" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
+          <option value="">All Statuses</option>
+          <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+          <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
+          <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+          <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+      </form>
+    </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 lg:ml-72 min-w-0">
+    <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1100px]">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">ID</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">User</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Parking Lot</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Vehicle</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Date</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Amount</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Payment</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Status</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in bookings %}
+            <tr class="border-b hover:bg-slate-50 transition">
+              <td class="p-4 text-sm font-medium">#{{ booking.id }}</td>
+              <td class="p-4 text-sm">{{ booking.user.username }}</td>
+              <td class="p-4 text-sm font-medium">{{ booking.parking_name }}</td>
+              <td class="p-4 text-sm">{{ booking.vehicle_number }} ({{ booking.vehicle_type }})</td>
+              <td class="p-4 text-sm whitespace-nowrap">{{ booking.booking_date }}</td>
+              <td class="p-4 text-sm">Rs {{ booking.amount }}</td>
+              <td class="p-4 text-sm">
+                {% if booking.payment_status == 'Paid' %}
+                <span class="inline-flex rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 text-xs font-semibold">Paid</span>
+                {% else %}
+                <span class="inline-flex rounded-full bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-semibold">Unpaid</span>
+                {% endif %}
+              </td>
+              <td class="p-4 text-sm">
+                {% if booking.status == 'Completed' %}
+                <span class="inline-flex rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 text-xs font-semibold">Completed</span>
+                {% elif booking.status == 'Active' %}
+                <span class="inline-flex rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 text-xs font-semibold">Active</span>
+                {% elif booking.status == 'Cancelled' %}
+                <span class="inline-flex rounded-full bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-semibold">Cancelled</span>
+                {% else %}
+                <span class="inline-flex rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 text-xs font-semibold">Pending</span>
+                {% endif %}
+              </td>
+              <td class="p-4">
+                <form method="POST" action="{% url 'admin_update_booking' booking.id %}" class="flex gap-2">
+                  {% csrf_token %}
+                  <select name="status" class="rounded-xl border border-slate-200 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/10">
+                    <option value="Pending" {% if booking.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Active" {% if booking.status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Completed" {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if booking.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                  </select>
+                  <button type="submit" class="rounded-xl bg-slate-900 text-white px-3 py-1.5 text-sm hover:bg-slate-800 transition">Update</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="p-6 text-center text-slate-500">No bookings found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-        <!-- Header -->
-        <header class="sticky top-0 z-30 bg-white border-b px-4 sm:px-6 py-4">
-            <div class="flex justify-between items-center gap-3">
+  <section id="reviews-section" class="hidden">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Reviews</h1>
+        <p class="mt-1 text-slate-500">Moderation and quality control.</p>
+      </div>
+    </div>
 
-                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <button id="menuBtn"class="lg:hidden bg-slate-900 text-white p-2 rounded-lg shrink-0">☰</button>
-                    <div class="min-w-0">
-                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 truncate">Admin Dashboard</h2>
-                        <p class="text-slate-500 text-sm sm:text-base truncate">Welcome back, {{ admin.first_name }}</p>
-                    </div>
-                </div>
+    <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1100px]">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">ID</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Parking Lot</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">User</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Rating</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Comment</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Owner Reply</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Date</th>
+              <th class="text-left p-4 text-sm font-semibold text-slate-500">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews %}
+            <tr class="border-b hover:bg-slate-50 transition align-top">
+              <td class="p-4 text-sm">#{{ review.id }}</td>
+              <td class="p-4 text-sm font-medium">{{ review.parking.parking_name }}</td>
+              <td class="p-4 text-sm">{{ review.user.username }}</td>
+              <td class="p-4 text-sm text-amber-500 whitespace-nowrap">
+                {% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}<span class="text-slate-300">&#9733;</span>{% endif %}{% endfor %}
+              </td>
+              <td class="p-4 text-sm max-w-xs">{{ review.comment|default:"—" }}</td>
+              <td class="p-4 text-sm max-w-xs">
+                {% if review.owner_reply %}
+                <span class="text-slate-700">{{ review.owner_reply }}</span>
+                {% else %}
+                <span class="text-slate-400">No reply yet</span>
+                {% endif %}
+              </td>
+              <td class="p-4 text-sm whitespace-nowrap">{{ review.created_at|date:"M d, Y" }}</td>
+              <td class="p-4">
+                <form method="POST" action="{% url 'admin_delete_review' review.id %}" onsubmit="return confirm('Permanently remove this review?');">
+                  {% csrf_token %}
+                  <button type="submit" class="rounded-xl bg-red-600 text-white px-3 py-1.5 text-sm hover:bg-red-700 transition">Remove</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="p-6 text-center text-slate-500">No reviews yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-                <div class="flex items-center gap-2 sm:gap-4">
+  <section id="verification-section" class="hidden">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Verifications</h1>
+        <p class="mt-1 text-slate-500">Review owner document submissions.</p>
+      </div>
+      <span class="inline-flex rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 text-sm font-semibold">{{ pending_owners|length }} pending</span>
+    </div>
 
-                    <button class="bg-slate-100 p-2.5 sm:p-3 rounded-full hover:bg-slate-200 transition">
-                        <i data-lucide="bell"></i>
-                    </button>
-
-                    <div class="relative group">
-
-                        <button class="flex items-center gap-3 bg-slate-100 rounded-xl px-3 sm:px-4 py-2 hover:bg-slate-200 transition">
-
-                            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shrink-0">
-                                {{ admin.first_name|slice:":1" }}
-                            </div>
-
-                            <div class="hidden md:block text-left">
-                                <h4 class="font-semibold">{{ admin.first_name }} {{ admin.last_name }}</h4>
-                                <p class="text-sm text-slate-500">Administrator</p>
-                            </div>
-
-                        </button>
-
-                    </div>
-
-                </div>
-
+    <div class="mt-6 space-y-4">
+      {% for owner in pending_owners %}
+      <div class="rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-5">
+          <div class="flex-1 min-w-0">
+            <h3 class="text-xl font-bold">{{ owner.full_name }}</h3>
+            <p class="text-slate-500 mt-1">{{ owner.company_name }}</p>
+            <p class="text-slate-500">{{ owner.phone }}</p>
+            <div class="mt-3 space-y-1">
+              {% for doc in owner.ownerdocument_set.all %}
+              <a href="{{ doc.file_url.url }}" target="_blank" rel="noreferrer" class="text-sm font-medium text-emerald-700 hover:underline">View {{ doc.document_type }}</a>
+              {% empty %}
+              <span class="text-sm text-red-600">No documents uploaded</span>
+              {% endfor %}
             </div>
-        </header>
-
-        <main class="p-4 sm:p-6 space-y-6 sm:space-y-8">
-
-            <!-- Dashboard -->
-            <section id="dashboard-section">
-
-                <!-- Welcome -->
-                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Welcome back {{ admin.first_name }} 👋</h1>
-                    <p class="mt-3 text-emerald-100">Monitor owners, parking lots and approvals from one place.</p>
-                </div>
-
-                <!-- Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mt-6 sm:mt-8">
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">Owners</p>
-                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ owners|length }}</h2>
-                            </div>
-                            <div class="bg-blue-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="users" class="text-blue-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">Parking Lots</p>
-                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ parking_lots|length }}</h2>
-                            </div>
-                            <div class="bg-emerald-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="car" class="text-emerald-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">Pending Owners</p>
-                                <h2 class="text-3xl sm:text-4xl font-bold mt-2">{{ pending_owners|length }}</h2>
-                            </div>
-                            <div class="bg-yellow-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="clock-3" class="text-yellow-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">System Status</p>
-                                <h2 class="text-xl sm:text-2xl font-bold mt-3 text-green-600">Online</h2>
-                            </div>
-                            <div class="bg-green-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="activity" class="text-green-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">Total Revenue</p>
-                                <h2 class="text-2xl sm:text-3xl font-bold mt-2 text-emerald-600">Rs {{ total_revenue }}</h2>
-                            </div>
-                            <div class="bg-emerald-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="banknote" class="text-emerald-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-5 sm:p-6 shadow hover:shadow-xl transition">
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-slate-500">Active Bookings</p>
-                                <h2 class="text-3xl sm:text-4xl font-bold mt-2 text-blue-600">{{ active_bookings_count }}</h2>
-                            </div>
-                            <div class="bg-blue-100 p-3 sm:p-4 rounded-2xl shrink-0">
-                                <i data-lucide="calendar-check" class="text-blue-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- Owners -->
-            <section id="owners-section" class="hidden">
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-                        <h2 class="text-xl sm:text-2xl font-bold">Registered Owners</h2>
-
-                        <span class="bg-slate-100 px-4 py-2 rounded-xl">{{ owners|length }} Owners</span>
-                    </div>
-
-                    <div class="overflow-x-auto">
-
-                        <table class="w-full min-w-[600px]">
-
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left p-4 whitespace-nowrap">Owner</th>
-                                    <th class="text-left p-4 whitespace-nowrap">Company</th>
-                                    <th class="text-left p-4 whitespace-nowrap">Phone</th>
-                                    <th class="text-left p-4 whitespace-nowrap">Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                {% for owner in owners %}
-                                <tr class="border-b hover:bg-slate-50 transition">
-
-                                    <td class="p-4 font-medium whitespace-nowrap">{{ owner.full_name }} </td>
-                            
-                                    <td class="p-4 whitespace-nowrap">{{ owner.company_name }} </td>
-
-                                    <td class="p-4 whitespace-nowrap">{{ owner.phone }}</td>
-
-                                    <td class="p-4 whitespace-nowrap">
-                                        {% if owner.is_verified %}
-                                        <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm">Verified</span>
-                                        {% else %}
-                                        <span class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm">Pending</span>
-                                        {% endif %}
-                                    </td>
-
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-10 text-slate-500">No owners registered.</td>
-                                </tr>
-                                {% endfor %}
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Parking -->
-            <section id="parking-section" class="hidden">
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-
-                    <h2 class="text-xl sm:text-2xl font-bold mb-6">Parking Lots</h2>
-
-                    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-
-                        {% for parking in parking_lots %}
-
-                        <div class="border rounded-2xl p-5 sm:p-6 hover:shadow-xl transition">
-
-                            <h3 class="text-xl font-bold">{{ parking.parking_name }}</h3>
-
-                            <p class="text-slate-500 mt-2">{{ parking.location }}</p>
-
-                            <div class="mt-5 space-y-2 text-sm">
-
-                                <div class="flex justify-between gap-3">
-                                    <span>Owner</span>
-                                    <span class="text-right">{{ parking.owner.full_name }}</span>
-                                </div>
-
-                                <div class="flex justify-between gap-3">
-                                    <span>Cars</span>
-                                    <span>{{ parking.car_capacity }}</span>
-                                </div>
-
-                                <div class="flex justify-between gap-3">
-                                    <span>Bikes</span>
-                                    <span>{{ parking.bike_capacity }}</span>
-                                </div>
-
-                                <div class="flex justify-between gap-3">
-                                    <span>Rate</span>
-                                    <span>Rs {{ parking.rate_per_hour }}/hr</span>
-                                </div>
-
-                                <div class="flex justify-between items-center pt-1 gap-3">
-                                    <span>Status</span>
-                                    {% if parking.is_active %}
-                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Active</span>
-                                    {% else %}
-                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Inactive</span>
-                                    {% endif %}
-                                </div>
-
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row gap-2 mt-5">
-
-                                <form method="POST" action="{% url 'admin_toggle_parking' parking.id %}" class="flex-1">
-                                    {% csrf_token %}
-                                    <button type="submit" class="w-full {% if parking.is_active %}bg-amber-500 hover:bg-amber-600{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white py-2 rounded-xl text-sm">
-                                        {% if parking.is_active %}Deactivate{% else %}Activate{% endif %}
-                                    </button>
-                                </form>
-
-                                <form method="POST" action="{% url 'admin_delete_parking' parking.id %}" class="flex-1"
-                                      onsubmit="return confirm('Permanently delete this parking lot?');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl text-sm">
-                                        Delete
-                                    </button>
-                                </form>
-
-                            </div>
-
-                        </div>
-
-                        {% empty %}
-                        <div class="col-span-full text-center py-16 text-slate-500">No parking lots available.</div>
-                        {% endfor %}
-
-                    </div>
-                </div>
-            </section>
-
-            <!-- Bookings -->
-            <section id="bookings-section" class="hidden">
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-
-                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-                        <h2 class="text-xl sm:text-2xl font-bold">All Bookings</h2>
-
-                        <form method="GET" class="flex items-center gap-2">
-                            <input type="hidden" name="section" value="bookings-section">
-                            <select name="status" onchange="this.form.submit()"
-                                    class="border rounded-xl px-4 py-2 w-full sm:w-auto">
-                                <option value="">All Statuses</option>
-                                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
-                                <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
-                                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
-                                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-                            </select>
-                        </form>
-                    </div>
-
-                    <div class="overflow-x-auto">
-
-                        <table class="w-full min-w-[1100px]">
-
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left p-4">ID</th>
-                                    <th class="text-left p-4">User</th>
-                                    <th class="text-left p-4">Parking Lot</th>
-                                    <th class="text-left p-4">Vehicle</th>
-                                    <th class="text-left p-4">Date</th>
-                                    <th class="text-left p-4">Amount</th>
-                                    <th class="text-left p-4">Payment</th>
-                                    <th class="text-left p-4">Status</th>
-                                    <th class="text-left p-4">Action</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                {% for booking in bookings %}
-                                <tr class="border-b hover:bg-slate-50 transition">
-
-                                    <td class="p-4">#{{ booking.id }}</td>
-                                    <td class="p-4">{{ booking.user.username }}</td>
-                                    <td class="p-4 font-medium">{{ booking.parking_name }}</td>
-                                    <td class="p-4">{{ booking.vehicle_number }} ({{ booking.vehicle_type }})</td>
-                                    <td class="p-4">{{ booking.booking_date }}</td>
-                                    <td class="p-4">Rs {{ booking.amount }}</td>
-                                    <td class="p-4">
-                                        {% if booking.payment_status == 'Paid' %}
-                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Paid</span>
-                                        {% else %}
-                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Unpaid</span>
-                                        {% endif %}
-                                    </td>
-
-                                    <td class="p-4">
-                                        {% if booking.status == 'Completed' %}
-                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Completed</span>
-                                        {% elif booking.status == 'Active' %}
-                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">Active</span>
-                                        {% elif booking.status == 'Cancelled' %}
-                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Cancelled</span>
-                                        {% else %}
-                                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">Pending</span>
-                                        {% endif %}
-                                    </td>
-
-                                    <td class="p-4">
-                                        <form method="POST" action="{% url 'admin_update_booking' booking.id %}" class="flex gap-2">
-                                            {% csrf_token %}
-                                            <select name="status" class="border rounded-lg px-2 py-1.5 text-sm">
-                                                <option value="Pending" {% if booking.status == 'Pending' %}selected{% endif %}>Pending</option>
-                                                <option value="Active" {% if booking.status == 'Active' %}selected{% endif %}>Active</option>
-                                                <option value="Completed" {% if booking.status == 'Completed' %}selected{% endif %}>Completed</option>
-                                                <option value="Cancelled" {% if booking.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-                                            </select>
-                                            <button type="submit" class="bg-slate-900 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm">Update</button>
-                                        </form>
-                                    </td>
-
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="9" class="text-center py-10 text-slate-500">No bookings found.</td>
-                                </tr>
-                                {% endfor %}
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Reviews -->
-            <section id="reviews-section" class="hidden">
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-
-                    <h2 class="text-xl sm:text-2xl font-bold mb-6">All Reviews</h2>
-
-                    <div class="overflow-x-auto">
-
-                        <table class="w-full min-w-[1100px]">
-
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left p-4">ID</th>
-                                    <th class="text-left p-4">Parking Lot</th>
-                                    <th class="text-left p-4">User</th>
-                                    <th class="text-left p-4">Rating</th>
-                                    <th class="text-left p-4">Comment</th>
-                                    <th class="text-left p-4">Owner Reply</th>
-                                    <th class="text-left p-4">Date</th>
-                                    <th class="text-left p-4">Action</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                {% for review in reviews %}
-                                <tr class="border-b hover:bg-slate-50 transition align-top">
-
-                                    <td class="p-4">#{{ review.id }}</td>
-                                    <td class="p-4 font-medium">{{ review.parking.parking_name }}</td>
-                                    <td class="p-4">{{ review.user.username }}</td>
-                                    <td class="p-4 text-amber-500 whitespace-nowrap">
-                                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}<span class="text-slate-300">&#9733;</span>{% endif %}{% endfor %}
-                                    </td>
-                                    <td class="p-4 max-w-xs">{{ review.comment|default:"—" }}</td>
-                                    <td class="p-4 max-w-xs">
-                                        {% if review.owner_reply %}
-                                        <span class="text-slate-600">{{ review.owner_reply }}</span>
-                                        {% else %}
-                                        <span class="text-slate-400">No reply yet</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="p-4 whitespace-nowrap">{{ review.created_at|date:"M d, Y" }}</td>
-                                    <td class="p-4">
-                                        <form method="POST" action="{% url 'admin_delete_review' review.id %}"
-                                              onsubmit="return confirm('Permanently remove this review?');">
-                                            {% csrf_token %}
-                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm">
-                                                Remove
-                                            </button>
-                                        </form>
-                                    </td>
-
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="8" class="text-center py-10 text-slate-500">No reviews yet.</td>
-                                </tr>
-                                {% endfor %}
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Verification -->
-            <section id="verification-section" class="hidden">
-
-                <div class="bg-white rounded-2xl shadow p-4 sm:p-6">
-
-                    <h2 class="text-xl sm:text-2xl font-bold mb-6">Pending Owner Verification</h2>
-
-                    <div class="space-y-5">
-
-                        {% for owner in pending_owners %}
-
-                        <div class="border rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 hover:shadow-lg transition">
-
-                            <div>
-                                <h3 class="text-xl font-bold">{{ owner.full_name }}</h3>
-                                <p class="text-slate-500 mt-2">{{ owner.company_name }}</p>
-                                <p class="text-slate-500">{{ owner.phone }}</p>
-
-                                <div class="mt-3 space-y-1">
-                                    {% for doc in owner.ownerdocument_set.all %}
-                                        <a href="{{ doc.file_url.url }}" target="_blank" rel="noopener"
-                                           class="text-blue-600 hover:underline text-sm block">
-                                            📄 View {{ doc.document_type }}
-                                        </a>
-                                    {% empty %}
-                                        <span class="text-red-500 text-sm">No documents uploaded</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row gap-3">
-
-                                <form method="POST" action="{% url 'approve_owner' owner.id %}"
-                                      onsubmit="return confirm('Approve this owner after reviewing their documents?');">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="w-full bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl text-center">
-                                        Approve
-                                    </button>
-                                </form>
-
-                                <form method="POST" action="{% url 'reject_owner' owner.id %}"
-                                      onsubmit="return confirm('Reject this owner?');">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="w-full bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl text-center">
-                                        Reject
-                                    </button>
-                                </form>
-
-                            </div>
-
-                        </div>
-
-                        {% empty %}
-
-                        <div class="text-center py-16">
-                            <i data-lucide="badge-check" class="mx-auto w-20 h-20 text-green-400"></i>
-                            <h3 class="text-2xl font-bold mt-4">All Owners Verified</h3>
-                            <p class="text-slate-500 mt-2">No pending verification requests.</p>
-                        </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            </section>
-
-<!-- ========================= -->
-<!-- Admin Settings Section -->
-<!-- ========================= -->
-
- <!-- Settings Section -->
-            <section id="setting-section" class="page-section hidden">
-
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <form method="POST" action="{% url 'approve_owner' owner.id %}" onsubmit="return confirm('Approve this owner after reviewing their documents?');">
+              {% csrf_token %}
+              <button type="submit" class="w-full rounded-xl bg-emerald-600 text-white px-5 py-3 font-semibold hover:bg-emerald-700 transition">Approve</button>
+            </form>
+            <form method="POST" action="{% url 'reject_owner' owner.id %}" onsubmit="return confirm('Reject this owner?');">
+              {% csrf_token %}
+              <button type="submit" class="w-full rounded-xl bg-red-600 text-white px-5 py-3 font-semibold hover:bg-red-700 transition">Reject</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-16 rounded-2xl bg-white ring-1 ring-slate-200">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <i data-lucide="badge-check" class="w-8 h-8"></i>
+        </div>
+        <h3 class="mt-4 text-lg font-bold">All Owners Verified</h3>
+        <p class="mt-1 text-sm text-slate-500">No pending verification requests.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="setting-section" class="hidden">
     <div class="mb-8">
-
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
-
-            Settings
-
-        </h1>
-
-        <p class="text-slate-500 mt-2">
-
-            Manage your account preferences.
-
-        </p>
-
+      <h1 class="text-2xl sm:text-3xl font-bold">Settings</h1>
+      <p class="mt-1 text-slate-500">Manage account preferences.</p>
     </div>
 
-
-    <!-- Account Settings -->
-
-    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
-
-        <h2 class="text-2xl font-bold mb-6">
-
-            Account
-
-        </h2>
-
-        <div class="space-y-5">
-
-            <div class="flex justify-between items-center gap-4">
-
-                <div>
-
-                    <h3 class="font-semibold">
-
-                        Email Notifications
-
-                    </h3>
-
-                    <p class="text-slate-500">
-
-                        Receive booking and payment emails.
-
-                    </p>
-
-                </div>
-
-                <input
-                    type="checkbox"
-                    checked
-                    class="w-6 h-6 shrink-0">
-
-            </div>
-
-
-            <div class="flex justify-between items-center gap-4">
-
-                <div>
-
-                    <h3 class="font-semibold">
-
-                        SMS Notifications
-
-                    </h3>
-
-                    <p class="text-slate-500">
-
-                        Receive booking SMS alerts.
-
-                    </p>
-
-                </div>
-
-                <input
-                    type="checkbox"
-                    checked
-                    class="w-6 h-6 shrink-0">
-
-            </div>
-
-
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-
-                <div>
-
-                    <h3 class="font-semibold">
-
-                        Dark Mode
-
-                    </h3>
-
-                    <p class="text-slate-500">
-
-                        Switch dashboard theme.
-
-                    </p>
-
-                </div>
-
-                <button
-                    id="darkModeBtn"
-                    class="bg-slate-800 text-white px-5 py-2 rounded-xl self-start sm:self-auto">
-
-                    Enable
-
-                </button>
-
-            </div>
-
+    <div class="space-y-6">
+      <div class="rounded-2xl bg-white p-5 sm:p-8 shadow-sm ring-1 ring-slate-200 space-y-5">
+        <h2 class="text-xl font-bold">Account</h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p class="font-semibold text-sm">Email Notifications</p>
+            <p class="text-sm text-slate-500">Receive booking and payment emails.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
         </div>
-
-    </div>
-
-
-    <!-- Security -->
-
-    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
-
-        <h2 class="text-2xl font-bold mb-6">
-
-            Security
-
-        </h2>
-
-        <div class="grid md:grid-cols-2 gap-6">
-
-    <button
-        onclick="showSection('change-password-section')"
-        class="bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition">
-
-        Change Password
-
-    </button>
-
-    <button
-        onclick="showSection('two-factor-section')"
-        class="bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition">
-
-        Two Factor Authentication
-
-    </button>
-
-</div>
-
-    </div>
-
-
-    <!-- System -->
-
-    <div class="bg-white rounded-2xl shadow p-5 sm:p-8 mb-8">
-
-        <h2 class="text-2xl font-bold mb-6">
-
-            System
-
-        </h2>
-
-        <div class="space-y-5">
-
-            <div class="flex justify-between gap-4">
-
-                <span>
-
-                    Version
-
-                </span>
-
-                <strong>
-
-                    Parkify v1.0
-
-                </strong>
-
-            </div>
-
-            <div class="flex justify-between gap-4">
-
-                <span>
-
-                    Last Login
-
-                </span>
-
-                <strong>
-
-                    {{ owner.last_login }}
-
-                </strong>
-
-            </div>
-
-            <div class="flex justify-between gap-4">
-
-                <span>
-
-                    Account Created
-
-                </span>
-
-                <strong>
-
-                    {{ owner.date_joined }}
-
-                </strong>
-
-            </div>
-
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p class="font-semibold text-sm">SMS Notifications</p>
+            <p class="text-sm text-slate-500">Receive booking SMS alerts.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
         </div>
+      </div>
 
-    </div>
-
-
-    <!-- Danger Zone -->
-
-    <div class="bg-red-50 border border-red-200 rounded-2xl p-5 sm:p-8">
-
-        <h2 class="text-2xl font-bold text-red-600">
-
-            Danger Zone
-
-        </h2>
-
-        <p class="text-slate-500 mt-2">
-
-            These actions cannot be undone.
-
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-4 mt-6">
-
-            <button
-                id="deleteAccountBtn"
-                class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl">
-
-                Delete Account
-
-            </button>
-
-            <a href="{% url 'logout' %}"
-               class="bg-slate-800 hover:bg-black text-white px-6 py-3 rounded-xl text-center">
-
-                Logout
-
-            </a>
-
+      <div class="rounded-2xl bg-white p-5 sm:p-8 shadow-sm ring-1 ring-slate-200">
+        <h2 class="text-xl font-bold mb-6">Security</h2>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <button onclick="showSection('change-password-section')" class="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 px-4 py-3 rounded-xl font-medium transition">Change Password</button>
+          <button onclick="showSection('two-factor-section')" class="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 px-4 py-3 rounded-xl font-medium transition">Two Factor Authentication</button>
         </div>
+      </div>
 
+      <div class="rounded-2xl bg-white p-5 sm:p-8 shadow-sm ring-1 ring-slate-200">
+        <h2 class="text-xl font-bold mb-6">System</h2>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between"><span>Version</span><strong>Parkify v1.0</strong></div>
+          <div class="flex justify-between"><span>Last Login</span><strong>{{ admin.last_login }}</strong></div>
+          <div class="flex justify-between"><span>Account Created</span><strong>{{ admin.date_joined }}</strong></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-red-50 border border-red-200 p-5 sm:p-8">
+        <h2 class="text-xl font-bold text-red-600">Danger Zone</h2>
+        <p class="mt-1 text-sm text-slate-500">These actions cannot be undone.</p>
+        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+          <button class="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition">Delete Account</button>
+          <a href="{% url 'logout' %}" class="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white px-5 py-3 rounded-xl transition">Logout</a>
+        </div>
+      </div>
     </div>
+  </section>
 
-</section>
-
-<section id="change-password-section" class="page-section hidden">
-
-<div class="mb-8">
-    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">Change Password</h1>
-    <p class="text-slate-500 mt-2">
-        Update your account password securely.
-    </p>
-</div>
-
-<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
-
-<form method="POST">
-
-{% csrf_token %}
-
-<div class="space-y-5">
-
-<div>
-    <label class="block mb-2 font-semibold">Current Password</label>
-    <input type="password"name="current_password"class="w-full border rounded-xl p-3"required>
-</div>
-
-<div>
-    <label class="block mb-2 font-semibold">New Password</label>
-    <input type="password"name="new_password"class="w-full border rounded-xl p-3"required>
-</div>
-
-<div>
-    <label class="block mb-2 font-semibold">Confirm Password</label>
-    <input type="password"name="confirm_password"class="w-full border rounded-xl p-3"required>
-</div>
-
-<div class="flex flex-col sm:flex-row gap-4">
-    <button type="submit"class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl">Save Password</button>
-    <button type="button"onclick="showSection('setting-section')"class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">Back</button>
-</div>
-
-</div>
-
-</form>
-
-</div>
-
-</section>
-<section id="two-factor-section" class="page-section hidden">
-
-<div class="mb-8">
-
-<h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold">
-Two Factor Authentication
-</h1>
-
-<p class="text-slate-500 mt-2">
-Improve your account security.
-</p>
-
-</div>
-
-<div class="bg-white rounded-2xl shadow p-5 sm:p-8 max-w-2xl">
-
-<div class="space-y-6">
-
-<p>
-
-Two Factor Authentication adds an extra layer of security by requiring a verification code during login.
-
-</p>
-
-<div class="flex flex-col sm:flex-row gap-4">
-
-<button
-class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl">
-
-Enable 2FA
-
-</button>
-
-<button
-onclick="showSection('setting-section')"
-class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl">
-
-Back
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-        </main>
-
+  <section id="change-password-section" class="hidden">
+    <div class="mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold">Change Password</h1>
+      <p class="mt-1 text-slate-500">Update your account password securely.</p>
     </div>
+    <div class="max-w-2xl rounded-2xl bg-white p-5 sm:p-8 shadow-sm ring-1 ring-slate-200">
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">Current Password</label>
+          <input type="password" name="current_password" required class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">New Password</label>
+          <input type="password" name="new_password" required class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">Confirm Password</label>
+          <input type="password" name="confirm_password" required class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 pt-1">
+          <button type="submit" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-medium transition">Save Password</button>
+          <button type="button" onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
+        </div>
+      </form>
+    </div>
+  </section>
 
-</div>
+  <section id="two-factor-section" class="hidden">
+    <div class="mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold">Two Factor Authentication</h1>
+      <p class="mt-1 text-slate-500">Improve your account security.</p>
+    </div>
+    <div class="max-w-2xl rounded-2xl bg-white p-5 sm:p-8 shadow-sm ring-1 ring-slate-200">
+      <p class="text-slate-600">Two Factor Authentication adds an extra layer of security by requiring a verification code during login.</p>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3">
+        <button class="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl transition">Enable 2FA</button>
+        <button onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
+      </div>
+    </div>
+  </section>
+
+</main>
 
 <script>
-
 lucide.createIcons();
+function showSection(section) {
+  const sections = [
+    'dashboard-section',
+    'owners-section',
+    'parking-section',
+    'bookings-section',
+    'reviews-section',
+    'verification-section',
+    'setting-section',
+    'change-password-section',
+    'two-factor-section'
+  ];
 
-function showSection(section){
+  sections.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
 
-    const sections = [
-        'dashboard-section',
-        'owners-section',
-        'parking-section',
-        'bookings-section',
-        'reviews-section',
-        'verification-section',
-        'setting-section',
-        'change-password-section',
-        'two-factor-section'
-    ];
+  const active = document.getElementById(section);
+  if (active) {
+    active.classList.remove('hidden');
+    active.classList.add('fade-in');
+  }
 
-    sections.forEach(function(id){
-
-        const element = document.getElementById(id);
-
-        if(element){
-            element.classList.add('hidden');
-        }
-
-    });
-
-    const activeSection = document.getElementById(section);
-
-    if(activeSection){
-        activeSection.classList.remove('hidden');
-    }
-
-    // Close the mobile sidebar drawer whenever a section is opened
-    if (window.innerWidth < 1024) {
-        closeSidebar();
-    }
-
-    // Scroll back to top so the newly shown section is visible
-    window.scrollTo({ top: 0, behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 {% if status_filter %}
 showSection('bookings-section');
 {% endif %}
 
-
-const menuBtn=document.getElementById('menuBtn');
-const sidebar=document.getElementById('sidebar');
-const overlay=document.getElementById('overlay');
-const sidebarClose=document.getElementById('sidebarClose');
-
-function openSidebar(){
-    sidebar.classList.remove('-translate-x-full');
-    overlay.classList.remove('hidden');
-}
-
-function closeSidebar(){
-    sidebar.classList.add('-translate-x-full');
-    overlay.classList.add('hidden');
-}
-
-menuBtn.addEventListener('click', openSidebar);
-
-overlay.addEventListener('click', closeSidebar);
-
-if (sidebarClose) {
-    sidebarClose.addEventListener('click', closeSidebar);
-}
-
-
-// Dark Mode
-// ==========================================
-
-const darkBtn = document.getElementById("darkModeBtn");
-
-if (darkBtn) {
-
-    darkBtn.addEventListener("click", function () {
-
-        document.body.classList.toggle("bg-slate-900");
-
-        document.body.classList.toggle("text-white");
-
-        document.body.classList.toggle("bg-slate-100");
-
-        document.body.classList.toggle("text-slate-800");
-
-        if (this.innerHTML === "Enable") {
-
-            this.innerHTML = "Disable";
-
-        } else {
-
-            this.innerHTML = "Enable";
-
-        }
-
-    });
-
-}
-
-// ==========================================
-// Delete Confirmation
-// ==========================================
-
-const deleteBtn = document.getElementById("deleteAccountBtn");
-
-if (deleteBtn) {
-
-    deleteBtn.addEventListener("click", function () {
-
-        const confirmDelete = confirm(
-
-            "Are you sure you want to delete your account?"
-
-        );
-
-        if (confirmDelete) {
-
-            alert("Account deletion request submitted.");
-
-        }
-
-    });
-
-}
-
 </script>
-
 </body>
 </html>

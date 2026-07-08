@@ -15,7 +15,7 @@ from datetime import datetime, date
 from math import ceil
 import random
 import string
-from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review,Notification
+from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review,Notification,SavedLocation
 from .tokens import signup_token_generator
 
 
@@ -245,8 +245,70 @@ def dashboard(request):
         return redirect('authentication')
 
     user = Signup.objects.get(id=request.session['user_id'])
+    bookings_qs = Booking.objects.filter(user=user).order_by('-created_at')
+    bookings = list(bookings_qs[:25])
+    total_bookings = bookings_qs.count()
+    active_bookings = bookings_qs.filter(status__in=['Pending', 'Active']).count()
+    completed_bookings = bookings_qs.filter(status='Completed').count()
+    saved_locations = SavedLocation.objects.filter(user=user).count()
 
-    return render(request, 'dashboard.html', {'user': user})
+    return render(request, 'dashboard.html', {
+        'user': user,
+        'bookings': bookings,
+        'total_bookings': total_bookings,
+        'active_bookings': active_bookings,
+        'completed_bookings': completed_bookings,
+        'recent_bookings': bookings[:6],
+        'saved_locations': saved_locations,
+    })
+
+# TODO(owner): finish analytics widgets and saved-locations backend wiring; stop short of full CRM.
+
+
+# Saved Locations
+def saved_locations_toggle(request, parking_id):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+    parking = get_object_or_404(ParkingLot, id=parking_id)
+    saved, _ = SavedLocation.objects.get_or_create(user=user, parking=parking)
+
+    if not _:
+        saved.delete()
+        saved = False
+    else:
+        saved = True
+
+    return JsonResponse({'saved': saved})
+
+
+def saved_locations_list(request):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+    saved = SavedLocation.objects.filter(user=user).select_related('parking').order_by('-saved_at')
+
+    return render(request, 'saved_locations.html', {
+        'saved_locations': saved,
+    })
+
+
+def saved_location_remove(request, saved_id):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    saved = get_object_or_404(SavedLocation, id=saved_id, user_id=request.session['user_id'])
+
+    if request.method == "POST":
+        saved.delete()
+        messages.success(request, "Saved location removed.")
+
+    return redirect('saved_locations_list')
 
 
 # Owner Dashboard
@@ -271,6 +333,13 @@ def owner_dashboard(request):
     document_exists = False
     verification_status = "Not Started"
     uploaded_doc_types = set()
+    total_owner_revenue = 0
+    occupancy = 0
+    total_owner_bookings = 0
+    bookings = []
+    revenue_per_lot = []
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
 
     if profile_exists:
         profile = OwnerProfile.objects.get(owner=owner)
@@ -301,15 +370,82 @@ def owner_dashboard(request):
     notifications = Notification.objects.filter(recipient=owner).order_by('-created_at')
     unread_notification_count = notifications.filter(is_read=False).count()
 
+    profile_parkings = ParkingLot.objects.filter(owner__owner=owner)
+    owner_parking_names = [p.parking_name for p in profile_parkings]
+    total_capacity = sum(
+        (p.car_capacity or 0) + (p.bike_capacity or 0) for p in profile_parkings
+    )
+
+    owner_bookings_qs = Booking.objects.filter(parking_name__in=owner_parking_names)
+    if start_date:
+        owner_bookings_qs = owner_bookings_qs.filter(booking_date__gte=start_date)
+    if end_date:
+        owner_bookings_qs = owner_bookings_qs.filter(booking_date__lte=end_date)
+
+    total_owner_bookings = owner_bookings_qs.count()
+
+    revenue_qs = PaymentTransaction.objects.filter(
+        status='Success',
+        booking__parking_name__in=owner_parking_names,
+    )
+    if start_date:
+        revenue_qs = revenue_qs.filter(paid_at__date__gte=start_date)
+    if end_date:
+        revenue_qs = revenue_qs.filter(paid_at__date__lte=end_date)
+
+    total_owner_revenue = revenue_qs.aggregate(total=models.Sum('amount'))['total'] or 0
+
+    recent_bookings_qs = owner_bookings_qs.select_related('user').order_by('-created_at')[:10]
+    bookings = list(recent_bookings_qs)
+
+    occupied_total = owner_bookings_qs.filter(
+        status__in=['Pending', 'Active'],
+        booking_date=date.today(),
+    ).count()
+    occupancy = 0
+    if total_capacity:
+        occupancy = min(round((occupied_total / total_capacity) * 100), 100)
+
+    revenue_per_lot = []
+    for parking in parkings:
+        lot_revenue = PaymentTransaction.objects.filter(
+            status='Success',
+            booking__parking_name=parking.parking_name,
+        )
+        if start_date:
+            lot_revenue = lot_revenue.filter(paid_at__date__gte=start_date)
+        if end_date:
+            lot_revenue = lot_revenue.filter(paid_at__date__lte=end_date)
+
+        lot_amount = lot_revenue.aggregate(total=models.Sum('amount'))['total'] or 0
+        lot_bookings = Booking.objects.filter(parking_name=parking.parking_name)
+        if start_date:
+            lot_bookings = lot_bookings.filter(booking_date__gte=start_date)
+        if end_date:
+            lot_bookings = lot_bookings.filter(booking_date__lte=end_date)
+
+        revenue_per_lot.append({
+            'parking': parking,
+            'revenue': lot_amount,
+            'bookings': lot_bookings.count(),
+        })
+
     context = {
         'owner': owner,
-        'parkings': parkings,
+        'parkings': parkings if profile_exists else [],
         'profile_exists': profile_exists,
         'document_exists': document_exists,
         'verification_status': verification_status,
         'uploaded_doc_types': uploaded_doc_types,
         'notifications': notifications,
         'unread_notification_count': unread_notification_count,
+        'total_owner_bookings': total_owner_bookings,
+        'total_owner_revenue': total_owner_revenue,
+        'bookings': bookings,
+        'occupancy': occupancy,
+        'revenue_per_lot': revenue_per_lot,
+        'start_date': start_date,
+        'end_date': end_date,
     }
 
     return render(
@@ -317,6 +453,7 @@ def owner_dashboard(request):
         'owner_dashboard.html',
         context
     )
+# TODO(owner): add revenue-per-lot breakdown and booking date-window picker; stop before analytics suite.
 # Owner profile
 def owner_profile(request):
 
@@ -366,7 +503,11 @@ def owner_profile(request):
 
         return redirect('owner_dashboard')
 
-    return render(request,'owner_profile.html')
+    return render(request,'owner_profile.html',{
+        'owner': owner_user,
+        'existing_profile': existing_profile,
+        'profile_exists': bool(existing_profile),
+    })
 
 # Owner Document
 def owner_document(request):
@@ -420,7 +561,6 @@ def owner_document(request):
         return redirect('owner_dashboard')
 
     return render(request, 'owner_document.html')
-# Add Parking
 def add_parking(request):
 
     if request.session.get('role') != 'owner':
@@ -445,7 +585,6 @@ def add_parking(request):
         return redirect('owner_profile')
 
     if not profile.is_verified:
-
         messages.error(
             request,
             "Admin verification required."
@@ -453,51 +592,59 @@ def add_parking(request):
 
         return redirect('owner_dashboard')
 
+    context = {}
+
     if request.method == "POST":
+        name = request.POST.get('parking_name', '').strip()
+        location = request.POST.get('location', '').strip()
+        car_capacity = request.POST.get('car_capacity', '').strip()
+        bike_capacity = request.POST.get('bike_capacity', '').strip()
+        rate_per_hour = request.POST.get('rate_per_hour', '').strip()
+
+        if not name or not location or not car_capacity or not bike_capacity or not rate_per_hour:
+            messages.error(request, "All main fields are required.")
+            context.update({
+                'parking_name': name,
+                'location': location,
+                'car_capacity': car_capacity,
+                'bike_capacity': bike_capacity,
+                'rate_per_hour': rate_per_hour,
+                'map_link': request.POST.get('map_link', ''),
+                'description': request.POST.get('description', ''),
+            })
+            return render(request, 'add_parking.html', context)
+
+        try:
+            car_capacity = int(car_capacity)
+            bike_capacity = int(bike_capacity)
+            rate_per_hour = float(rate_per_hour)
+            if car_capacity < 0 or bike_capacity < 0 or rate_per_hour <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, "Capacity must be whole numbers and rate must be a positive value.")
+            context.update({
+                'parking_name': name,
+                'location': location,
+                'car_capacity': car_capacity,
+                'bike_capacity': bike_capacity,
+                'rate_per_hour': rate_per_hour,
+                'map_link': request.POST.get('map_link', ''),
+                'description': request.POST.get('description', ''),
+            })
+            return render(request, 'add_parking.html', context)
 
         ParkingLot.objects.create(
-
             owner=profile,
-
-            parking_name=request.POST.get(
-                'parking_name'
-            ),
-
-            parking_image=request.FILES.get(
-                'parking_image'
-            ),
-
-            location=request.POST.get(
-                'location'
-            ),
-
-            latitude=request.POST.get(
-                'latitude'
-            ),
-
-            longitude=request.POST.get(
-                'longitude'
-            ),
-
-            car_capacity=request.POST.get(
-                'car_capacity'
-            ),
-
-            bike_capacity=request.POST.get(
-                'bike_capacity'
-            ),
-
-            rate_per_hour=request.POST.get(
-                'rate_per_hour'
-            ),
-
-            map_link=request.POST.get(
-                'map_link'
-            ),
-
-            description=request.POST.get(
-                'description'
-            )
+            parking_name=name,
+            parking_image=request.FILES.get('parking_image'),
+            location=location,
+            latitude=request.POST.get('latitude'),
+            longitude=request.POST.get('longitude'),
+            car_capacity=car_capacity,
+            bike_capacity=bike_capacity,
+            rate_per_hour=rate_per_hour,
+            map_link=request.POST.get('map_link'),
+            description=request.POST.get('description')
         )
 
         messages.success(
@@ -511,8 +658,10 @@ def add_parking(request):
 
     return render(
         request,
-        'add_parking.html'
+        'add_parking.html',
+        context
     )
+
 #my parking lot
 def my_parking_lots(request):
 
@@ -542,39 +691,63 @@ def edit_parking(request, parking_id):
     parking = get_object_or_404(ParkingLot, id=parking_id, owner=profile)
 
     if request.method == "POST":
+        name = request.POST.get('parking_name', '').strip()
+        location = request.POST.get('location', '').strip()
+        car_capacity = request.POST.get('car_capacity', '').strip()
+        bike_capacity = request.POST.get('bike_capacity', '').strip()
+        rate_per_hour = request.POST.get('rate_per_hour', '').strip()
 
-        parking.parking_name = request.POST.get('parking_name')
-        parking.location = request.POST.get('location')
+        if not name or not location or not car_capacity or not bike_capacity or not rate_per_hour:
+            messages.error(request, "All main fields are required.")
+            return render(request, 'edit_parking.html', {
+                'parking': parking,
+                'parking_name': name,
+                'location': location,
+                'car_capacity': car_capacity,
+                'bike_capacity': bike_capacity,
+                'rate_per_hour': rate_per_hour,
+                'map_link': request.POST.get('map_link', ''),
+                'description': request.POST.get('description', ''),
+            })
+
+        try:
+            car_capacity = int(car_capacity)
+            bike_capacity = int(bike_capacity)
+            rate_per_hour = float(rate_per_hour)
+            if car_capacity < 0 or bike_capacity < 0 or rate_per_hour <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, "Capacity must be whole numbers and rate must be a positive value.")
+            return render(request, 'edit_parking.html', {
+                'parking': parking,
+                'parking_name': name,
+                'location': location,
+                'car_capacity': request.POST.get('car_capacity', ''),
+                'bike_capacity': request.POST.get('bike_capacity', ''),
+                'rate_per_hour': request.POST.get('rate_per_hour', ''),
+                'map_link': request.POST.get('map_link', ''),
+                'description': request.POST.get('description', ''),
+            })
+
+        parking.parking_name = name
+        parking.location = location
         parking.latitude = request.POST.get('latitude') or None
         parking.longitude = request.POST.get('longitude') or None
-        parking.car_capacity = request.POST.get('car_capacity')
-        parking.bike_capacity = request.POST.get('bike_capacity')
-        parking.rate_per_hour = request.POST.get('rate_per_hour')
+        parking.car_capacity = car_capacity
+        parking.bike_capacity = bike_capacity
+        parking.rate_per_hour = rate_per_hour
         parking.map_link = request.POST.get('map_link')
         parking.description = request.POST.get('description')
         parking.is_active = request.POST.get('is_active') == 'on'
 
         if request.FILES.get('parking_image'):
-            parking.parking_image = request.FILES.get(
-                'parking_image'
-            )
+            parking.parking_image = request.FILES.get('parking_image')
 
         parking.save()
-
-        messages.success(
-            request,
-            "Parking updated successfully."
-        )
-
+        messages.success(request, "Parking updated successfully.")
         return redirect('my_parking_lots')
 
-    return render(
-        request,
-        'edit_parking.html',
-        {
-            'parking': parking
-        }
-    )
+    return render(request, 'edit_parking.html', {'parking': parking})
 
 #delete
 def delete_parking(request, parking_id):
@@ -611,6 +784,8 @@ def view_parking(request, parking_id):
     ).count()
 
     reviews = parking.reviews.select_related('user').all()
+    average_rating = parking.average_rating()
+    review_count = parking.review_count()
 
     context = {
         'parking': parking,
@@ -619,8 +794,8 @@ def view_parking(request, parking_id):
         'bike_available': max(parking.bike_capacity - bike_booked, 0),
         'logged_in': bool(request.session.get('user_id')),
         'reviews': reviews,
-        'average_rating': parking.average_rating(),
-        'review_count': parking.review_count(),
+        'average_rating': average_rating,
+        'review_count': review_count,
     }
 
     return render(request,'view_parking.html', context)
@@ -688,6 +863,23 @@ def browse_parking(request):
     }
 
     return render(request, 'browse_parking.html', context)
+
+
+# TODO(owner): make dashboard compute owner revenue/occupancy from a single date-windowed aggregation so stats stay consistent with bookings.
+def map_search(request):
+    parkings = list(ParkingLot.objects.filter(is_active=True)[:200])
+    sites = [
+        {
+            "id": p.id,
+            "name": p.parking_name,
+            "lat": float(p.latitude) if p.latitude else None,
+            "lng": float(p.longitude) if p.longitude else None,
+            "location": p.location,
+            "rate_per_hour": float(p.rate_per_hour) if p.rate_per_hour else 0,
+        }
+        for p in parkings
+    ]
+    return render(request, "map_search.html", {"sites": sites})
 
 
 # Create a Booking
@@ -771,14 +963,14 @@ def book_parking(request, parking_id):
         status='Pending'
     )
 
-    messages.success(
-        request,
-        f"Booking confirmed at {parking.parking_name}! Total amount: Rs {amount}"
-    )
-
     booking = Booking.objects.filter(
         user=user, parking_name=parking.parking_name
     ).order_by('-created_at').first()
+
+    messages.success(
+        request,
+        f"Booking created successfully. Please complete payment to confirm."
+    )
 
     _notify_owner(
         parking,
@@ -1169,7 +1361,17 @@ def owner_reply_review(request, review_id):
 
         if not reply_text:
             messages.error(request, "Reply cannot be empty.")
-            return redirect('parking_reviews', parking_id=review.parking.id)
+            return render(
+                request,
+                'owner_reviews.html',
+                {
+                    'parking': review.parking,
+                    'reviews': review.parking.reviews.select_related('user').all(),
+                    'average_rating': review.parking.average_rating(),
+                    'review_count': review.parking.review_count(),
+                    'mode': 'reply',
+                },
+            )
 
         review.owner_reply = reply_text
         review.replied_at = timezone.now()
@@ -1315,41 +1517,80 @@ def password_reset_complete(request):
     return render(request, 'password_reset_complete.html')
 
 # changing the password
-@login_required
 def change_password(request):
 
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    role = request.session.get('role')
+    if role not in ('user', 'owner', 'admin'):
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+
     if request.method == "POST":
+        current_password = request.POST.get("current_password", "")
+        new_password = request.POST.get("new_password", "")
+        confirm_password = request.POST.get("confirm_password", "")
 
-        current_password = request.POST.get("current_password")
-        new_password = request.POST.get("new_password")
-        confirm_password = request.POST.get("confirm_password")
+        valid = False
+        try:
+            identify_hasher(user.password)
+            valid = check_password(current_password, user.password)
+        except ValueError:
+            valid = user.password == current_password
 
-        user = request.user
-
-        # Check current password
-        if not user.check_password(current_password):
+        if not valid:
             messages.error(request, "Current password is incorrect.")
-            return redirect("dashboard")
+            return render(request, 'change_password.html', {
+                'current_password': current_password
+            })
 
-        # Check password match
         if new_password != confirm_password:
             messages.error(request, "New passwords do not match.")
-            return redirect("dashboard")
+            return render(request, 'change_password.html', {
+                'current_password': current_password
+            })
 
-        # Prevent same password
         if current_password == new_password:
             messages.error(request, "New password cannot be the same as the current password.")
-            return redirect("dashboard")
+            return render(request, 'change_password.html', {
+                'current_password': current_password
+            })
 
-        # Change password
-        user.set_password(new_password)
-        user.save()
+        if len(new_password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, 'change_password.html', {
+                'current_password': current_password
+            })
 
-        # Keep user logged in
-        update_session_auth_hash(request, user)
+        user.password = make_password(new_password)
+        user.save(update_fields=["password"])
 
-        messages.success(request, "Password changed successfully.")
+        success_message = "Password changed successfully."
+        dashboard_name = 'dashboard'
+        if role == 'owner':
+            success_message = "Owner password updated successfully."
+            dashboard_name = 'owner_dashboard'
+        elif role == 'admin':
+            success_message = "Admin password updated successfully."
 
-        return redirect("dashboard")
+        messages.success(request, success_message)
 
-    return redirect("dashboard")
+        try:
+            send_mail(
+                subject='Parkify password changed',
+                message=f'Hi {user.username}, your password was changed successfully.',
+                from_email=None,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+        return redirect(dashboard_name)
+
+    return render(request, 'change_password.html')
+
+# TODO(owner): expand SavedLocation endpoints after browse_parking map/bookmark UI is wired.
+# TODO(owner): add optional password-change email notification when backend mail is configured.
