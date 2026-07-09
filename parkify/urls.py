@@ -50,8 +50,8 @@ urlpatterns = [
     path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     path('notifications/clear/', views.clear_notifications, name='clear_notifications'),
 
-    # ---- Admin: manage bookings & parking lots ----
-    path('admin-dashboard/booking/<int:booking_id>/update/', views.admin_update_booking, name='admin_update_booking'),
+    # ---- Owner: manage bookings for their own parking lots ----
+    path('owner-dashboard/booking/<int:booking_id>/update/', views.owner_update_booking, name='owner_update_booking'),
     path('admin-dashboard/parking/<int:parking_id>/toggle/', views.admin_toggle_parking, name='admin_toggle_parking'),
     path('admin-dashboard/parking/<int:parking_id>/delete/', views.admin_delete_parking, name='admin_delete_parking'),
     path('admin-dashboard/review/<int:review_id>/delete/', views.admin_delete_review, name='admin_delete_review'),

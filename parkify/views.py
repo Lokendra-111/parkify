@@ -487,12 +487,26 @@ def owner_profile(request):
                 return value
             return getattr(existing_profile, name, '') if existing_profile else ''
 
+        resolved_full_name = field('full_name')
+        resolved_company_name = field('company_name')
+
+        if not resolved_full_name or not resolved_company_name:
+            messages.error(
+                request,
+                "Full Name and Company Name are required. Please fill them in before saving."
+            )
+            return render(request, 'owner_profile.html', {
+                'owner': owner_user,
+                'existing_profile': existing_profile,
+                'profile_exists': bool(existing_profile),
+            })
+
         OwnerProfile.objects.update_or_create(
             owner=owner_user,
 
             defaults={
-                'full_name': field('full_name'),
-                'company_name': field('company_name'),
+                'full_name': resolved_full_name,
+                'company_name': resolved_company_name,
                 'registration_no': field('registration_no'),
                 'phone': field('phone'),
                 'address': field('address'),
@@ -1111,14 +1125,24 @@ def payment_receipt(request, txn_id):
     return render(request, 'payment_receipt.html', {'txn': txn, 'booking': txn.booking})
 
 
-# ---- Admin: manage bookings & parking lots ----
+# ---- Owner: manage bookings for their own parking lots ----
 
-def admin_update_booking(request, booking_id):
+def owner_update_booking(request, booking_id):
 
-    if request.session.get('role') != 'admin':
+    if request.session.get('role') != 'owner':
         return redirect('authentication')
 
-    booking = get_object_or_404(Booking, id=booking_id)
+    owner_user = Signup.objects.get(
+        id=request.session['user_id']
+    )
+
+    owner_parking_names = list(
+        ParkingLot.objects.filter(owner__owner=owner_user).values_list('parking_name', flat=True)
+    )
+
+    booking = get_object_or_404(
+        Booking, id=booking_id, parking_name__in=owner_parking_names
+    )
 
     new_status = request.POST.get('status') if request.method == "POST" else request.GET.get('status')
 
@@ -1126,7 +1150,7 @@ def admin_update_booking(request, booking_id):
 
     if new_status not in valid_statuses:
         messages.error(request, "Invalid booking status.")
-        return redirect('admin_dashboard')
+        return redirect('owner_dashboard')
 
     booking.status = new_status
     booking.save()
@@ -1136,7 +1160,7 @@ def admin_update_booking(request, booking_id):
         f"Booking #{booking.id} marked as {new_status}."
     )
 
-    return redirect('admin_dashboard')
+    return redirect('owner_dashboard')
 
 
 def admin_toggle_parking(request, parking_id):

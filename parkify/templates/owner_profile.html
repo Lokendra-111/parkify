@@ -90,15 +90,15 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-1">Company Name</label>
-          <input type="text" name="company_name" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+          <input type="text" name="company_name" value="{{ existing_profile.company_name|default:'' }}" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-1">Registration Number</label>
-          <input type="text" name="registration_no" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+          <input type="text" name="registration_no" value="{{ existing_profile.registration_no|default:'' }}" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-1">Business Address</label>
-          <textarea name="address" rows="4" class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition"></textarea>
+          <textarea name="address" rows="4" class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">{{ existing_profile.address|default:'' }}</textarea>
         </div>
       </div>
     </div>
@@ -114,4 +114,4 @@
 lucide.createIcons();
 </script>
 </body>
-</html>
+</html> 
