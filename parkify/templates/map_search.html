@@ -58,7 +58,8 @@
       el.textContent = 'Rs ' + Math.round(site.rate_per_hour || 0) + '/hr';
       const icon = L.divIcon({ html: el.outerHTML, className: '', iconSize: [80, 28], iconAnchor: [40, 14] });
       const m = L.marker([site.lat, site.lng], { icon }).addTo(map);
-      m.bindPopup(`<strong>${site.name}</strong><br>${site.location}<br><a class='underline text-emerald-700' href='{% url 'view_parking' 0 %}'.replace('/0/','/${site.id}/') + "'>View details</a>`);
+      const detailUrl = "{% url 'view_parking' 0 %}".replace('/0/', '/' + site.id + '/');
+m.bindPopup(`<strong>${site.name}</strong><br>${site.location}<br><a class='underline text-emerald-700' href='${detailUrl}'>View details</a>`);
       markers.push(m);
     });
 
