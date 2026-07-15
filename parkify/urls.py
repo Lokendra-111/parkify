@@ -58,6 +58,10 @@ urlpatterns = [
 
     # ---- Change password ----
     path("change-password/",views.change_password,name="change_password"),
+    path("verify-otp/", views.verify_otp, name="verify_otp"),
+    path("reactivate-account/", views.reactivate_account, name="reactivate_account"),
+    path("two-factor/toggle/", views.two_factor_toggle, name="two_factor_toggle"),
+    path("account/delete/", views.delete_account, name="delete_account"),
 
     # ---- Saved locations ----
     path("saved-locations/", views.saved_locations_list, name="saved_locations_list"),

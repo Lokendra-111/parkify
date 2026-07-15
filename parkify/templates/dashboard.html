@@ -86,10 +86,10 @@
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Completed Trips</p>
         <p class="mt-2 text-3xl font-bold text-slate-900">{{ completed_bookings }}</p>
       </div>
-      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition">
+      <a href="{% url 'saved_locations_list' %}" class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-lg transition block">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Saved Locations</p>
         <p class="mt-2 text-3xl font-bold text-slate-900">{{ saved_locations|default:"0" }}</p>
-      </div>
+      </a>
     </div>
 
     <!-- Quick actions -->
@@ -124,7 +124,7 @@
         </div>
       </a>
 
-      <div class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer">
+      <a href="{% url 'saved_locations_list' %}" class="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-xl hover:-translate-y-1 transition">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="flex items-center justify-center h-10 w-10 rounded-xl bg-violet-50 text-violet-700">
@@ -137,7 +137,7 @@
           </div>
           <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition"></i>
         </div>
-      </div>
+      </a>
     </div>
 
     <!-- Recent bookings -->
@@ -197,32 +197,6 @@
     </div>
 
     <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-      <h2 class="text-xl font-bold">Account</h2>
-      <div class="mt-5 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p class="font-semibold text-sm">Email Notifications</p>
-            <p class="text-sm text-slate-500">Receive booking and payment emails.</p>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" checked class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-900/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
-          </label>
-        </div>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p class="font-semibold text-sm">SMS Notifications</p>
-            <p class="text-sm text-slate-500">Receive booking SMS alerts.</p>
-          </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" checked class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-900/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-6 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
       <h2 class="text-xl font-bold">Security</h2>
       <div class="mt-5 grid sm:grid-cols-2 gap-3">
         <button onclick="showSection('change-password-section')" class="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white px-4 py-3 rounded-xl font-medium hover:bg-slate-50 transition">Change Password</button>
@@ -269,7 +243,10 @@
       <h2 class="text-xl font-bold text-red-600">Danger Zone</h2>
       <p class="mt-1 text-sm text-slate-500">These actions cannot be undone.</p>
       <div class="mt-5 flex flex-col sm:flex-row gap-3">
-        <button id="deleteAccountBtn" class="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition">Delete Account</button>
+        <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to deactivate your account? You will be logged out and will need to contact support to reactivate.');">
+          {% csrf_token %}
+          <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition">Delete Account</button>
+        </form>
         <a href="{% url 'logout' %}" class="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white px-5 py-3 rounded-xl transition">Logout</a>
       </div>
     </div>
@@ -284,7 +261,7 @@
       <button onclick="showSection('setting-section')" class="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-slate-50 transition">Back</button>
     </div>
     <div class="mt-6 max-w-2xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-      <form method="POST" class="space-y-4">
+      <form method="POST" action="{% url 'change_password' %}" class="space-y-4">
         {% csrf_token %}
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-1">Current Password</label>
@@ -315,10 +292,25 @@
       <button onclick="showSection('setting-section')" class="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-slate-50 transition">Back</button>
     </div>
     <div class="mt-6 max-w-2xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-      <p class="text-slate-600">Two Factor Authentication adds an extra layer of security by requiring a verification code during login.</p>
+      <p class="text-slate-600">Two Factor Authentication adds an extra layer of security by emailing you a one-time code each time you log in.</p>
+      <p class="mt-3 text-sm font-medium">
+        Status:
+        {% if user.two_factor_enabled %}
+        <span class="text-emerald-700">Enabled</span>
+        {% else %}
+        <span class="text-slate-500">Disabled</span>
+        {% endif %}
+      </p>
       <div class="mt-6 flex flex-col sm:flex-row gap-3">
-        <button class="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl transition">Enable 2FA</button>
-        <button onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
+        <form method="POST" action="{% url 'two_factor_toggle' %}">
+          {% csrf_token %}
+          {% if user.two_factor_enabled %}
+          <button type="submit" class="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 px-5 py-3 rounded-xl font-medium transition">Disable 2FA</button>
+          {% else %}
+          <button type="submit" class="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl transition">Enable 2FA</button>
+          {% endif %}
+        </form>
+        <button type="button" onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
       </div>
     </div>
   </section>
@@ -337,10 +329,6 @@ function showSection(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-const deleteBtn = document.getElementById('deleteAccountBtn');
-if (deleteBtn) deleteBtn.addEventListener('click', () => {
-  if (confirm('Are you sure you want to delete your account?')) alert('Account deletion request submitted.');
-});
 </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ from datetime import datetime, date
 from math import ceil
 import random
 import string
-from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review,Notification,SavedLocation
+from .models import Signup,Booking,OwnerProfile,OwnerDocument,ParkingLot,PaymentTransaction,Review,Notification,SavedLocation,OTPCode
 from .tokens import signup_token_generator
 
 
@@ -113,6 +113,20 @@ def authentication(request):
                 )
                 return redirect('authentication')
 
+            if not user.is_active:
+                _send_reactivation_otp(user)
+                request.session['pending_reactivation_user_id'] = user.id
+                messages.info(
+                    request,
+                    "This account is deactivated. We've emailed you a code to reactivate it."
+                )
+                return redirect('reactivate_account')
+
+            if user.two_factor_enabled:
+                _send_login_otp(user)
+                request.session['pending_2fa_user_id'] = user.id
+                return redirect('verify_otp')
+
             # Store session
             request.session['user_id'] = user.id
             request.session['username'] = user.username
@@ -134,6 +148,178 @@ def authentication(request):
                 return redirect('dashboard')
 
     return render(request, 'authentication.html')
+
+
+def _send_login_otp(user):
+    """Generate a fresh 6-digit login-2FA code, store it, and email it to the user."""
+    code = f"{random.randint(0, 999999):06d}"
+    OTPCode.objects.create(user=user, code=code, purpose='login')
+    send_mail(
+        subject='Your Parkify login code',
+        message=f'Hi {user.username}, your login verification code is {code}. It expires in 10 minutes.',
+        from_email=None,
+        recipient_list=[user.email],
+        fail_silently=True,
+    )
+
+
+def _send_reactivation_otp(user):
+    """Generate a fresh 6-digit account-reactivation code, store it, and email it to the user."""
+    code = f"{random.randint(0, 999999):06d}"
+    OTPCode.objects.create(user=user, code=code, purpose='reactivation')
+    send_mail(
+        subject='Reactivate your Parkify account',
+        message=(
+            f'Hi {user.username}, your account was deactivated. '
+            f'Your reactivation code is {code}. It expires in 10 minutes. '
+            f"If you didn't request this, you can ignore this email."
+        ),
+        from_email=None,
+        recipient_list=[user.email],
+        fail_silently=True,
+    )
+
+
+# Two-Factor Login Verification
+def verify_otp(request):
+
+    pending_id = request.session.get('pending_2fa_user_id')
+    if not pending_id:
+        return redirect('authentication')
+
+    user = get_object_or_404(Signup, id=pending_id)
+
+    if request.method == "POST":
+
+        if request.POST.get('action') == 'resend':
+            _send_login_otp(user)
+            messages.success(request, "A new code has been sent to your email.")
+            return redirect('verify_otp')
+
+        entered_code = request.POST.get('code', '').strip()
+
+        otp = OTPCode.objects.filter(user=user, is_used=False, purpose='login').order_by('-created_at').first()
+
+        if not otp or otp.code != entered_code or otp.is_expired():
+            messages.error(request, "Invalid or expired code. Please try again.")
+            return render(request, 'verify_otp.html', {'email': user.email})
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        del request.session['pending_2fa_user_id']
+
+        request.session['user_id'] = user.id
+        request.session['username'] = user.username
+        request.session['role'] = user.role
+
+        messages.success(request, f"Welcome {user.username}!")
+
+        if user.role == 'admin':
+            return redirect('admin_dashboard')
+        elif user.role == 'owner':
+            return redirect('owner_dashboard')
+        else:
+            return redirect('dashboard')
+
+    return render(request, 'verify_otp.html', {'email': user.email})
+
+
+# Two-Factor Authentication toggle
+def two_factor_toggle(request):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+    user.two_factor_enabled = not user.two_factor_enabled
+    user.save(update_fields=['two_factor_enabled'])
+
+    if user.two_factor_enabled:
+        messages.success(request, "Two-factor authentication enabled. You'll be emailed a code at each login.")
+    else:
+        messages.success(request, "Two-factor authentication disabled.")
+
+    role = request.session.get('role')
+    if role == 'owner':
+        return redirect('owner_dashboard')
+    elif role == 'admin':
+        return redirect('admin_dashboard')
+    return redirect('dashboard')
+
+
+# Delete Account (soft delete: deactivate + log out, data is preserved)
+def delete_account(request):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    if request.method != "POST":
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+    role = request.session.get('role')
+
+    user.is_active = False
+    user.save(update_fields=['is_active'])
+
+    if role == 'owner':
+        # Hide the owner's listings from renters; booking/review history is preserved.
+        ParkingLot.objects.filter(owner__owner=user).update(is_active=False)
+
+    request.session.flush()
+    messages.success(request, "Your account has been deactivated. Contact support if this was a mistake.")
+    return redirect('authentication')
+
+
+# Self-service account reactivation
+def reactivate_account(request):
+
+    pending_id = request.session.get('pending_reactivation_user_id')
+    if not pending_id:
+        return redirect('authentication')
+
+    user = get_object_or_404(Signup, id=pending_id)
+
+    if request.method == "POST":
+
+        if request.POST.get('action') == 'resend':
+            _send_reactivation_otp(user)
+            messages.success(request, "A new reactivation code has been sent to your email.")
+            return redirect('reactivate_account')
+
+        entered_code = request.POST.get('code', '').strip()
+
+        otp = OTPCode.objects.filter(user=user, is_used=False, purpose='reactivation').order_by('-created_at').first()
+
+        if not otp or otp.code != entered_code or otp.is_expired():
+            messages.error(request, "Invalid or expired code. Please try again.")
+            return render(request, 'reactivate_account.html', {'email': user.email})
+
+        otp.is_used = True
+        otp.save(update_fields=['is_used'])
+
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+
+        del request.session['pending_reactivation_user_id']
+
+        request.session['user_id'] = user.id
+        request.session['username'] = user.username
+        request.session['role'] = user.role
+
+        messages.success(request, f"Welcome back, {user.username}! Your account has been reactivated.")
+        if user.role == 'owner':
+            messages.info(request, "Your parking listings were hidden when you deactivated your account. Re-enable them from 'My Parking Lots' whenever you're ready.")
+
+        if user.role == 'admin':
+            return redirect('admin_dashboard')
+        elif user.role == 'owner':
+            return redirect('owner_dashboard')
+        else:
+            return redirect('dashboard')
+
+    return render(request, 'reactivate_account.html', {'email': user.email})
 # Admin Dashboard
 def admin_dashboard(request):
 
@@ -269,19 +455,19 @@ def dashboard(request):
 def saved_locations_toggle(request, parking_id):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return JsonResponse({'error': 'login_required'}, status=401)
 
     user = Signup.objects.get(id=request.session['user_id'])
     parking = get_object_or_404(ParkingLot, id=parking_id)
-    saved, _ = SavedLocation.objects.get_or_create(user=user, parking=parking)
+    saved, created = SavedLocation.objects.get_or_create(user=user, parking=parking)
 
-    if not _:
+    if not created:
         saved.delete()
-        saved = False
+        is_saved = False
     else:
-        saved = True
+        is_saved = True
 
-    return JsonResponse({'saved': saved})
+    return JsonResponse({'saved': is_saved, 'count': SavedLocation.objects.filter(user=user).count()})
 
 
 def saved_locations_list(request):
@@ -837,6 +1023,14 @@ def browse_parking(request):
     results = []
     today = date.today()
 
+    saved_parking_ids = set()
+    if request.session.get('user_id'):
+        saved_parking_ids = set(
+            SavedLocation.objects.filter(
+                user_id=request.session['user_id']
+            ).values_list('parking_id', flat=True)
+        )
+
     for parking in parkings:
 
         car_booked = Booking.objects.filter(
@@ -867,6 +1061,7 @@ def browse_parking(request):
             'bike_available': bike_available,
             'average_rating': parking.average_rating(),
             'review_count': parking.review_count(),
+            'is_saved': parking.id in saved_parking_ids,
         })
 
     context = {
@@ -874,6 +1069,7 @@ def browse_parking(request):
         'query': query,
         'vehicle': vehicle,
         'sort': sort,
+        'is_logged_in': bool(request.session.get('user_id')),
     }
 
     return render(request, 'browse_parking.html', context)
@@ -1598,6 +1794,7 @@ def change_password(request):
             dashboard_name = 'owner_dashboard'
         elif role == 'admin':
             success_message = "Admin password updated successfully."
+            dashboard_name = 'admin_dashboard'
 
         messages.success(request, success_message)
 

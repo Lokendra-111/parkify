@@ -228,20 +228,12 @@
       </div>
 
       <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-        <h2 class="text-xl font-bold mb-6">Change Password</h2>
-        <div class="grid md:grid-cols-3 gap-4">
+        <div class="flex items-center justify-between gap-3">
           <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Current Password</label>
-            <input type="password" name="old_password" placeholder="Current Password" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+            <h2 class="text-xl font-bold">Password</h2>
+            <p class="mt-1 text-sm text-slate-500">Change your password from the settings page.</p>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">New Password</label>
-            <input type="password" name="new_password" placeholder="New Password" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Confirm Password</label>
-            <input type="password" name="confirm_password" placeholder="Confirm Password" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
-          </div>
+          <button type="button" onclick="showSection('change-password-section')" class="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-50 transition">Change Password</button>
         </div>
       </div>
 
@@ -634,7 +626,10 @@
         <h2 class="text-xl font-bold text-red-600">Danger Zone</h2>
         <p class="mt-1 text-sm text-slate-500">These actions cannot be undone.</p>
         <div class="mt-5 flex flex-col sm:flex-row gap-3">
-          <button id="deleteAccountBtn" class="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition">Delete Account</button>
+          <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to deactivate your account? Your parking listings will be hidden from renters and you will be logged out.');">
+            {% csrf_token %}
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition">Delete Account</button>
+          </form>
           <a href="{% url 'logout' %}" class="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white px-5 py-3 rounded-xl transition">Logout</a>
         </div>
       </div>
@@ -647,7 +642,7 @@
       <p class="mt-1 text-slate-500">Update your account password securely.</p>
     </div>
     <div class="max-w-2xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-      <form method="POST" class="space-y-4">
+      <form method="POST" action="{% url 'change_password' %}" class="space-y-4">
         {% csrf_token %}
         <div>
           <label class="block text-sm font-medium text-slate-600 mb-1">Current Password</label>
@@ -675,10 +670,25 @@
       <p class="mt-1 text-slate-500">Improve your account security.</p>
     </div>
     <div class="max-w-2xl rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
-      <p class="text-slate-600">Two Factor Authentication adds an extra layer of security by requiring a verification code during login.</p>
+      <p class="text-slate-600">Two Factor Authentication adds an extra layer of security by emailing you a one-time code each time you log in.</p>
+      <p class="mt-3 text-sm font-medium">
+        Status:
+        {% if owner.two_factor_enabled %}
+        <span class="text-emerald-700">Enabled</span>
+        {% else %}
+        <span class="text-slate-500">Disabled</span>
+        {% endif %}
+      </p>
       <div class="mt-6 flex flex-col sm:flex-row gap-3">
-        <button class="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl transition">Enable 2FA</button>
-        <button onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
+        <form method="POST" action="{% url 'two_factor_toggle' %}">
+          {% csrf_token %}
+          {% if owner.two_factor_enabled %}
+          <button type="submit" class="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 px-5 py-3 rounded-xl font-medium transition">Disable 2FA</button>
+          {% else %}
+          <button type="submit" class="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl transition">Enable 2FA</button>
+          {% endif %}
+        </form>
+        <button type="button" onclick="showSection('setting-section')" class="inline-flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 px-5 py-3 rounded-xl font-medium transition">Back</button>
       </div>
     </div>
   </section>
@@ -704,13 +714,6 @@ function showSection(section) {
     active.classList.add('fade-in');
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-const deleteBtn = document.getElementById('deleteAccountBtn');
-if (deleteBtn) {
-  deleteBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to delete your account?')) alert('Account deletion request submitted.');
-  });
 }
 
 const ownerMapContainer = document.getElementById('ownerMap');

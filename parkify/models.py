@@ -13,9 +13,37 @@ class Signup(models.Model):
     password = models.CharField(max_length=255)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    two_factor_enabled = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+
+
+# One-time codes for email-based two-factor login verification and account reactivation
+class OTPCode(models.Model):
+
+    PURPOSE_CHOICES = (
+        ('login', 'Login 2FA'),
+        ('reactivation', 'Account Reactivation'),
+    )
+
+    user = models.ForeignKey(Signup, on_delete=models.CASCADE, related_name='otp_codes')
+    code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='login')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def is_expired(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() > self.created_at + timedelta(minutes=10)
+
+    def __str__(self):
+        return f"OTP for {self.user.username}"
     
 
 #owner profile 

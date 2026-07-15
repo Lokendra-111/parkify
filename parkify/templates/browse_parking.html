@@ -29,6 +29,9 @@
         <i data-lucide="map" class="w-4 h-4 text-slate-500"></i> Map view
       </a>
       <a href="{% url 'my_bookings' %}" class="hidden sm:inline-flex text-sm font-medium text-slate-600 hover:text-slate-900 transition">Bookings</a>
+      <a href="{% url 'saved_locations_list' %}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+        <i data-lucide="heart" class="w-4 h-4"></i> Saved
+      </a>
       <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5">
         <div class="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold">
           {{ request.session.username|default:"?"|slice:"0:1" }}
@@ -132,6 +135,15 @@
               {% if item.car_available > 0 or item.bike_available > 0 %}Available{% else %}Full{% endif %}
             </span>
           </div>
+          <button
+            type="button"
+            class="save-toggle absolute bottom-3 right-3 flex items-center justify-center h-9 w-9 rounded-full bg-white/90 border border-white/70 shadow-sm hover:bg-white transition"
+            data-toggle-url="{% url 'saved_locations_toggle' item.parking.id %}"
+            data-saved="{% if item.is_saved %}true{% else %}false{% endif %}"
+            aria-label="Save parking spot"
+          >
+            <i data-lucide="heart" class="save-icon w-4 h-4 {% if item.is_saved %}fill-red-500 text-red-500{% else %}text-slate-500{% endif %}"></i>
+          </button>
         </div>
 
         <div class="p-4 sm:p-5">
@@ -189,6 +201,38 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
     const active = chip.classList.contains('border-emerald-500');
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('border-emerald-500', 'bg-emerald-50'));
     if (!active) chip.classList.add('border-emerald-500', 'bg-emerald-50');
+  });
+});
+
+document.querySelectorAll('.save-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const icon = btn.querySelector('.save-icon');
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(btn.dataset.toggleUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (res.status === 401) {
+        window.location.href = "{% url 'authentication' %}";
+        return;
+      }
+
+      const data = await res.json();
+      btn.dataset.saved = data.saved ? 'true' : 'false';
+      icon.classList.toggle('fill-red-500', data.saved);
+      icon.classList.toggle('text-red-500', data.saved);
+      icon.classList.toggle('text-slate-500', !data.saved);
+    } catch (err) {
+      console.error('Could not update saved location', err);
+    } finally {
+      btn.disabled = false;
+    }
   });
 });
 </script>
