@@ -304,7 +304,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                         <h2 class="text-4xl font-black text-white">
 
-                            500+
+                            {{ stats.total_lots_display }}
 
                         </h2>
 
@@ -320,7 +320,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                         <h2 class="text-4xl font-black text-white">
 
-                            1K+
+                            {{ stats.total_users_display }}
 
                         </h2>
 
@@ -412,7 +412,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                     <h2 class="text-3xl font-black text-green-600">
 
-                        243
+                        {{ stats.total_available_spots }}
 
                     </h2>
 
@@ -428,7 +428,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                     <h2 class="text-3xl font-black text-yellow-500">
 
-                        ★ 4.9
+                        ★ {{ stats.platform_rating }}
 
                     </h2>
 
@@ -499,7 +499,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                 <h2 class="mt-6 text-5xl font-black text-slate-900">
 
-                    500+
+                    {{ stats.total_lots_display }}
 
                 </h2>
 
@@ -524,7 +524,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                 <h2 class="mt-6 text-5xl font-black text-slate-900">
 
-                    1K+
+                    {{ stats.total_users_display }}
 
                 </h2>
 
@@ -549,7 +549,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                 <h2 class="mt-6 text-5xl font-black text-slate-900">
 
-                    4.9
+                    {{ stats.platform_rating }}
 
                 </h2>
 
@@ -891,19 +891,26 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
             <!-- CARD -->
 
+            {% for item in featured_parkings %}
             <article class="group bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl transition duration-500">
 
                 <div class="relative overflow-hidden">
 
+                    {% if item.parking.parking_image %}
+                    <img
+                    src="{{ item.parking.parking_image.url }}"
+                    class="h-72 w-full object-cover group-hover:scale-110 transition duration-700">
+                    {% else %}
                     <img
                     src="{% static 'parkify/images/parking1.jpg' %}"
                     class="h-72 w-full object-cover group-hover:scale-110 transition duration-700">
+                    {% endif %}
 
                     <div class="absolute top-5 left-5">
 
                         <span class="px-3 py-2 rounded-full bg-blue-600 text-white font-semibold text-sm">
 
-                            Rs.120/hr
+                            Rs.{{ item.parking.rate_per_hour|floatformat:0 }}/hr
 
                         </span>
 
@@ -912,9 +919,11 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
                     <div class="absolute top-5 right-5">
 
                         <button
-                        class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition">
+                        data-toggle-url="{% url 'saved_locations_toggle' item.parking.id %}"
+                        data-saved="{% if item.is_saved %}true{% else %}false{% endif %}"
+                        class="save-toggle w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition">
 
-                            <i data-lucide="heart" class="w-5 h-5"></i>
+                            <i data-lucide="heart" class="save-icon w-5 h-5 {% if item.is_saved %}fill-red-500 text-red-500{% endif %}"></i>
 
                         </button>
 
@@ -922,9 +931,9 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                     <div class="absolute bottom-5 left-5">
 
-                        <span class="px-3 py-2 rounded-full bg-green-600 text-white font-semibold text-sm">
+                        <span class="px-3 py-2 rounded-full font-semibold text-sm {% if item.is_available %}bg-green-600 text-white{% else %}bg-red-600 text-white{% endif %}">
 
-                            ● Available
+                            ● {% if item.is_available %}Available{% else %}Full{% endif %}
 
                         </span>
 
@@ -940,7 +949,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                             <h3 class="text-2xl font-bold">
 
-                                Central Mall Parking
+                                {{ item.parking.parking_name }}
 
                             </h3>
 
@@ -948,7 +957,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                                 <i data-lucide="map-pin" class="w-4 h-4"></i>
 
-                                Kathmandu, Thamel
+                                {{ item.parking.location }}
 
                             </p>
 
@@ -956,7 +965,7 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                         <div class="text-yellow-500 font-bold flex items-center gap-1">
 
-                            ★ 4.9
+                            ★ {{ item.average_rating }}
 
                         </div>
 
@@ -966,13 +975,13 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                         <span class="px-4 py-2 rounded-xl bg-slate-100">
 
-                            🚗 24 Cars
+                            🚗 {{ item.car_available }} Cars
 
                         </span>
 
                         <span class="px-4 py-2 rounded-xl bg-slate-100">
 
-                            🏍️ 12 Bikes
+                            🏍️ {{ item.bike_available }} Bikes
 
                         </span>
 
@@ -990,13 +999,13 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
 
                             <h4 class="text-3xl font-black">
 
-                                Rs.120
+                                Rs.{{ item.parking.rate_per_hour|floatformat:0 }}
 
                             </h4>
 
                         </div>
 
-                        <a href="{% url 'view_parking' 1 %}"
+                        <a href="{% url 'view_parking' item.parking.id %}"
 
                         class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
 
@@ -1009,243 +1018,11 @@ class="fixed top-0 inset-x-0 z-50 transition-all duration-500 glass border-b bor
                 </div>
 
             </article>
-
-            <article class="group bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl transition duration-500">
-
-                <div class="relative overflow-hidden">
-
-                    <img
-                    src="{% static 'parkify/images/parking2.jpg' %}"
-                    class="h-72 w-full object-cover group-hover:scale-110 transition duration-700">
-
-                    <div class="absolute top-5 left-5">
-
-                        <span class="px-3 py-2 rounded-full bg-blue-600 text-white font-semibold text-sm">
-
-                            Rs.120/hr
-
-                        </span>
-
-                    </div>
-
-                    <div class="absolute top-5 right-5">
-
-                        <button
-                        class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition">
-
-                            <i data-lucide="heart" class="w-5 h-5"></i>
-
-                        </button>
-
-                    </div>
-
-                    <div class="absolute bottom-5 left-5">
-
-                        <span class="px-3 py-2 rounded-full bg-green-600 text-white font-semibold text-sm">
-
-                            ● Available
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="p-8">
-
-                    <div class="flex justify-between items-start">
-
-                        <div>
-
-                            <h3 class="text-2xl font-bold">
-
-                                Central Mall Parking
-
-                            </h3>
-
-                            <p class="mt-2 flex items-center gap-2 text-slate-500">
-
-                                <i data-lucide="map-pin" class="w-4 h-4"></i>
-
-                                Kathmandu, Thamel
-
-                            </p>
-
-                        </div>
-
-                        <div class="text-yellow-500 font-bold flex items-center gap-1">
-
-                            ★ 4.9
-
-                        </div>
-
-                    </div>
-
-                    <div class="mt-6 flex flex-wrap gap-3">
-
-                        <span class="px-4 py-2 rounded-xl bg-slate-100">
-
-                            🚗 24 Cars
-
-                        </span>
-
-                        <span class="px-4 py-2 rounded-xl bg-slate-100">
-
-                            🏍️ 12 Bikes
-
-                        </span>
-
-                    </div>
-
-                    <div class="mt-8 flex justify-between items-center">
-
-                        <div>
-
-                            <p class="text-sm text-slate-400">
-
-                                Starting From
-
-                            </p>
-
-                            <h4 class="text-3xl font-black">
-
-                                Rs.120
-
-                            </h4>
-
-                        </div>
-
-                        <a href="{% url 'view_parking' 1 %}"
-
-                        class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
-
-                            Book Now
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </article>
-            <article class="group bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl transition duration-500">
-
-                <div class="relative overflow-hidden">
-
-                    <img
-                    src="{% static 'parkify/images/parking1.jpg' %}"
-                    class="h-72 w-full object-cover group-hover:scale-110 transition duration-700">
-
-                    <div class="absolute top-5 left-5">
-
-                        <span class="px-3 py-2 rounded-full bg-blue-600 text-white font-semibold text-sm">
-
-                            Rs.120/hr
-
-                        </span>
-
-                    </div>
-
-                    <div class="absolute top-5 right-5">
-
-                        <button
-                        class="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition">
-
-                            <i data-lucide="heart" class="w-5 h-5"></i>
-
-                        </button>
-
-                    </div>
-
-                    <div class="absolute bottom-5 left-5">
-
-                        <span class="px-3 py-2 rounded-full bg-green-600 text-white font-semibold text-sm">
-
-                            ● Available
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="p-8">
-
-                    <div class="flex justify-between items-start">
-
-                        <div>
-
-                            <h3 class="text-2xl font-bold">
-
-                                Central Mall Parking
-
-                            </h3>
-
-                            <p class="mt-2 flex items-center gap-2 text-slate-500">
-
-                                <i data-lucide="map-pin" class="w-4 h-4"></i>
-
-                                Kathmandu, Thamel
-
-                            </p>
-
-                        </div>
-
-                        <div class="text-yellow-500 font-bold flex items-center gap-1">
-
-                            ★ 4.9
-
-                        </div>
-
-                    </div>
-
-                    <div class="mt-6 flex flex-wrap gap-3">
-
-                        <span class="px-4 py-2 rounded-xl bg-slate-100">
-
-                            🚗 24 Cars
-
-                        </span>
-
-                        <span class="px-4 py-2 rounded-xl bg-slate-100">
-
-                            🏍️ 12 Bikes
-
-                        </span>
-
-                    </div>
-
-                    <div class="mt-8 flex justify-between items-center">
-
-                        <div>
-
-                            <p class="text-sm text-slate-400">
-
-                                Starting From
-
-                            </p>
-
-                            <h4 class="text-3xl font-black">
-
-                                Rs.120
-
-                            </h4>
-
-                        </div>
-
-                        <a href="{% url 'view_parking' 1 %}"
-
-                        class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
-
-                            Book Now
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </article>
+            {% empty %}
+            <div class="col-span-full text-center py-16">
+                <p class="text-slate-500 text-lg">No parking spots available yet. Check back soon!</p>
+            </div>
+            {% endfor %}
 
         </div>
 
@@ -1273,7 +1050,7 @@ class="rounded-[32px] shadow-2xl w-full object-cover h-[650px]">
 
 <h2 class="text-5xl font-black text-blue-600">
 
-500+
+{{ stats.total_lots_display }}
 
 </h2>
 
@@ -1622,27 +1399,33 @@ See what our users say about Parkify.
 
 <div class="grid lg:grid-cols-3 gap-8 mt-20">
 
+{% for review in testimonials %}
 <!-- Review -->
 
 <div class="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 hover:shadow-2xl transition">
 
 <div class="flex items-center gap-4">
 
-<img src="https://i.pravatar.cc/100?img=12"
-
-class="w-16 h-16 rounded-full">
+{% if review.user.profile_image %}
+<img src="{{ review.user.profile_image.url }}"
+class="w-16 h-16 rounded-full object-cover">
+{% else %}
+<div class="w-16 h-16 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl">
+{{ review.user.first_name|first|upper }}
+</div>
+{% endif %}
 
 <div>
 
 <h3 class="font-bold text-xl">
 
-Sujan Sharma
+{{ review.user.first_name }} {{ review.user.last_name }}
 
 </h3>
 
 <p class="text-slate-500">
 
-Kathmandu
+{{ review.parking.location }}
 
 </p>
 
@@ -1652,104 +1435,22 @@ Kathmandu
 
 <div class="flex text-yellow-400 mt-6">
 
-★★★★★
+{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}
 
 </div>
 
 <p class="mt-5 text-slate-500 leading-8">
 
-Parkify helped me find parking in seconds.
-No more wasting fuel driving around.
+{{ review.comment }}
 
 </p>
 
 </div>
-
-<!-- Review -->
-
-<div class="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 hover:shadow-2xl transition">
-
-<div class="flex items-center gap-4">
-
-<img src="https://i.pravatar.cc/100?img=24"
-
-class="w-16 h-16 rounded-full">
-
-<div>
-
-<h3 class="font-bold text-xl">
-
-Aashika KC
-
-</h3>
-
-<p class="text-slate-500">
-
-Pokhara
-
-</p>
-
+{% empty %}
+<div class="col-span-full text-center py-10">
+<p class="text-slate-500">No reviews yet — be the first to share your experience!</p>
 </div>
-
-</div>
-
-<div class="flex text-yellow-400 mt-6">
-
-★★★★★
-
-</div>
-
-<p class="mt-5 text-slate-500 leading-8">
-
-Booking parking has never been easier.
-Highly recommended!
-
-</p>
-
-</div>
-
-<!-- Review -->
-
-<div class="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 hover:shadow-2xl transition">
-
-<div class="flex items-center gap-4">
-
-<img src="https://i.pravatar.cc/100?img=33"
-
-class="w-16 h-16 rounded-full">
-
-<div>
-
-<h3 class="font-bold text-xl">
-
-Ramesh Rai
-
-</h3>
-
-<p class="text-slate-500">
-
-Butwal
-
-</p>
-
-</div>
-
-</div>
-
-<div class="flex text-yellow-400 mt-6">
-
-★★★★★
-
-</div>
-
-<p class="mt-5 text-slate-500 leading-8">
-
-Fast booking, transparent pricing,
-and excellent support.
-
-</p>
-
-</div>
+{% endfor %}
 
 </div>
 
@@ -1908,7 +1609,7 @@ Reserve your parking before you arrive.
     <h3 class="font-bold text-xl">Contact</h3>
 <div class="mt-6 space-y-3 text-slate-400">
 
-<p>Kathmandu, Nepal</p>
+<p>Dhangadhi, Nepal</p>
 <p>support@parkify.com</p>
 <p>+977-9800000000</p>
 
@@ -1976,6 +1677,39 @@ else{
 
 /* Lucide */
 lucide.createIcons();
+
+/* Save / Favorite toggle on featured parking cards */
+document.querySelectorAll('.save-toggle').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const icon = btn.querySelector('.save-icon');
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(btn.dataset.toggleUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (res.status === 401) {
+        window.location.href = "{% url 'authentication' %}";
+        return;
+      }
+
+      const data = await res.json();
+      btn.dataset.saved = data.saved ? 'true' : 'false';
+      icon.classList.toggle('fill-red-500', data.saved);
+      icon.classList.toggle('text-red-500', data.saved);
+    } catch (err) {
+      console.error('Could not update saved location', err);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+});
 </script>
 <script>lucide.createIcons();</script>
 </body>

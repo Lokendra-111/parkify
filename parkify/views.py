@@ -35,9 +35,109 @@ def _notify_owner(parking, notif_type, title, message, link=''):
         link=link,
     )
 
+def _format_stat(n):
+    """Format a raw count into a compact display string, e.g. 1450 -> '1.4K+', 87 -> '87+'."""
+    n = n or 0
+    if n >= 1000:
+        value = n / 1000
+        # Drop the decimal when it's a whole number (2.0K -> 2K)
+        text = f"{value:.1f}".rstrip('0').rstrip('.')
+        return f"{text}K+"
+    return f"{n}+"
+
+
 # Landing Page
 def home(request):
-    return render(request, 'index.html')
+
+    today = date.today()
+
+    featured_qs = ParkingLot.objects.filter(is_active=True).order_by('-created_at')[:3]
+
+    saved_parking_ids = set()
+    if request.session.get('user_id'):
+        saved_parking_ids = set(
+            SavedLocation.objects.filter(
+                user_id=request.session['user_id']
+            ).values_list('parking_id', flat=True)
+        )
+
+    featured_parkings = []
+
+    for parking in featured_qs:
+
+        car_booked = Booking.objects.filter(
+            parking_name=parking.parking_name,
+            vehicle_type='Car',
+            booking_date=today,
+            status__in=['Pending', 'Active']
+        ).count()
+
+        bike_booked = Booking.objects.filter(
+            parking_name=parking.parking_name,
+            vehicle_type='Bike',
+            booking_date=today,
+            status__in=['Pending', 'Active']
+        ).count()
+
+        car_available = max(parking.car_capacity - car_booked, 0)
+        bike_available = max(parking.bike_capacity - bike_booked, 0)
+
+        featured_parkings.append({
+            'parking': parking,
+            'car_available': car_available,
+            'bike_available': bike_available,
+            'average_rating': parking.average_rating(),
+            'review_count': parking.review_count(),
+            'is_saved': parking.id in saved_parking_ids,
+            'is_available': (car_available > 0 or bike_available > 0),
+        })
+
+    # ---- Platform-wide stats (hero + stats-strip + floating badges) ----
+
+    active_lots = ParkingLot.objects.filter(is_active=True)
+    total_lots = active_lots.count()
+    total_users = Signup.objects.filter(role='user').count()
+
+    rating_agg = Review.objects.aggregate(avg=models.Avg('rating'))['avg']
+    platform_rating = round(rating_agg, 1) if rating_agg else 5.0
+
+    # Sum of currently-free car+bike slots across every active lot, today.
+    total_available_spots = 0
+    for lot in active_lots:
+        car_booked = Booking.objects.filter(
+            parking_name=lot.parking_name, vehicle_type='Car',
+            booking_date=today, status__in=['Pending', 'Active']
+        ).count()
+        bike_booked = Booking.objects.filter(
+            parking_name=lot.parking_name, vehicle_type='Bike',
+            booking_date=today, status__in=['Pending', 'Active']
+        ).count()
+        total_available_spots += max(lot.car_capacity - car_booked, 0)
+        total_available_spots += max(lot.bike_capacity - bike_booked, 0)
+
+    stats = {
+        'total_lots_display': _format_stat(total_lots),
+        'total_users_display': _format_stat(total_users),
+        'platform_rating': platform_rating,
+        'total_available_spots': total_available_spots,
+    }
+
+    # ---- Real testimonials, best-rated first ----
+
+    testimonials = (
+        Review.objects.select_related('user', 'parking')
+        .exclude(comment='')
+        .order_by('-rating', '-created_at')[:3]
+    )
+
+    context = {
+        'featured_parkings': featured_parkings,
+        'stats': stats,
+        'testimonials': testimonials,
+    }
+
+    return render(request, 'index.html', context)
+
 
 
 # Authentication Page
