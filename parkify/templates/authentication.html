@@ -19,11 +19,17 @@
     <!-- Left: form panel -->
     <div class="order-2 md:order-1 px-6 py-10 sm:px-10 sm:py-12 overflow-y-auto">
       <div class="max-w-sm mx-auto">
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-            <i data-lucide="parking-circle" class="w-5 h-5"></i>
-          </div>
-          <span class="text-xl font-bold text-slate-900">Parkify</span>
+        <!-- Premium Brand -->
+        <div class="flex items-center justify-center md:justify-start mb-8">
+          <a href="{% url 'home' %}" class="flex items-center gap-4 group">
+            <div class="h-20 w-20  flex items-center justify-center transition duration-300 group-hover:scale-105">
+              <img src="{% static 'parkify/images/image.png' %}" alt="Parkify Logo" class="h-18 w-18 object-contain">
+            </div>
+            <div>
+              <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Parkify</h1>
+              <p class="text-sm text-slate-500 font-medium">Smart Parking Solution</p>
+            </div>
+          </a>
         </div>
 
         {% if messages %}
@@ -37,8 +43,8 @@
         {% endif %}
 
         <div class="mt-6">
-          <h1 id="authTitle" class="text-2xl font-bold text-slate-900">Welcome</h1>
-          <p id="authDesc" class="mt-1 text-sm text-slate-500">Find and reserve parking spaces easily.</p>
+          <h1 id="authTitle" class="text-2xl font-bold text-slate-900">Welcome Back</h1>
+          <p id="authDesc" class="mt-1 text-sm text-slate-500">Sign in to continue managing your parking spaces.</p>
         </div>
 
         <!-- LOGIN -->
