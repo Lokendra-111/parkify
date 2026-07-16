@@ -17,6 +17,7 @@ urlpatterns = [
     path('reset/done/', views.password_reset_complete, name='password_reset_complete'),
 
     path('my-bookings/',views.my_bookings,name='my_bookings'),
+    path('user-profile/',views.user_profile,name='user_profile'),
     path('owner-profile/',views.owner_profile,name='owner_profile'),
     path('owner-document/',views.owner_document,name='owner_document'), 
     path('approve-owner/<int:owner_id>/',views.approve_owner,name='approve_owner'),

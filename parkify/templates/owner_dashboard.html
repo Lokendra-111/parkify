@@ -30,10 +30,18 @@
         <button onclick="showSection('parking-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Parking</button>
         <button onclick="showSection('booking-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Bookings</button>
         <button onclick="showSection('notification-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Notifications</button>
+        <button onclick="showSection('profile-section')" class="nav-chip px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Profile</button>
       </nav>
       <div class="flex items-center gap-2 sm:gap-3">
         <button class="md:hidden bg-slate-100 p-2.5 rounded-full hover:bg-slate-200 transition" aria-label="Menu" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
           <i data-lucide="menu" class="w-4 h-4 text-slate-700"></i>
+        </button>
+        <button onclick="showSection('profile-section')" class="hidden sm:flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 hover:bg-slate-50 transition" title="My Profile">
+          {% if owner.profile_image %}
+          <img src="{{ owner.profile_image.url }}" class="h-7 w-7 rounded-full object-cover">
+          {% else %}
+          <div class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">{{ owner.first_name|slice:"0:1" }}</div>
+          {% endif %}
         </button>
         <a href="{% url 'logout' %}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition">Logout</a>
       </div>
@@ -44,6 +52,7 @@
         <button onclick="showSection('parking-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Parking</button>
         <button onclick="showSection('booking-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Bookings</button>
         <button onclick="showSection('notification-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Notifications</button>
+        <button onclick="showSection('profile-section')" class="text-left rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium">Profile</button>
         <a href="{% url 'logout' %}" class="text-left rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Logout</a>
       </div>
     </div>
@@ -183,7 +192,11 @@
             {% else %}
             <div class="w-32 h-32 rounded-full bg-slate-900 text-white flex items-center justify-center text-4xl font-bold">{{ owner.first_name|slice:":1" }}</div>
             {% endif %}
-            <input type="file" name="profile_image" class="mt-4 text-sm">
+            <label class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800 cursor-pointer">
+              <i data-lucide="upload" class="w-4 h-4"></i> Change Photo
+              <input type="file" name="profile_image" accept="image/*" class="hidden" onchange="this.closest('form').querySelector('.file-name').textContent = this.files[0] ? this.files[0].name : ''">
+            </label>
+            <p class="file-name mt-1 text-xs text-slate-400"></p>
           </div>
           <div class="flex-1 w-full grid md:grid-cols-2 gap-4">
             <div>

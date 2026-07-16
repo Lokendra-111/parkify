@@ -551,6 +551,34 @@ def dashboard(request):
 # TODO(owner): finish analytics widgets and saved-locations backend wiring; stop short of full CRM.
 
 
+# User profile - lets a regular user update their name, email and profile picture
+def user_profile(request):
+
+    if not request.session.get('user_id'):
+        return redirect('authentication')
+
+    if request.session.get('role') != 'user':
+        return redirect('authentication')
+
+    user = Signup.objects.get(id=request.session['user_id'])
+
+    if request.method == "POST":
+
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+
+        if request.FILES.get('profile_image'):
+            user.profile_image = request.FILES.get('profile_image')
+
+        user.save()
+
+        messages.success(request, "Profile saved successfully.")
+        return redirect('dashboard')
+
+    return redirect('dashboard')
+
+
 # Saved Locations
 def saved_locations_toggle(request, parking_id):
 

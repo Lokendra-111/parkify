@@ -49,6 +49,7 @@
     <nav class="hidden md:flex items-center gap-1 bg-slate-100/70 rounded-xl p-1">
       <button onclick="showSection('dashboard-main')" data-nav-chip class="nav-chip active px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">Home</button>
       <a href="{% url 'browse_parking' %}" class="nav-chip px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white transition">Find Parking</a>
+      <button onclick="showSection('profile-section')" data-nav-chip class="nav-chip px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">Profile</button>
       <button onclick="showSection('setting-section')" data-nav-chip class="nav-chip px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 transition">Settings</button>
     </nav>
 
@@ -56,15 +57,19 @@
       <a href="{% url 'browse_parking' %}" class="hidden sm:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition shadow-sm hover:shadow-lg">
         <i data-lucide="search" class="w-4 h-4"></i> Find Parking
       </a>
-      <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5">
+      <button onclick="showSection('profile-section')" class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 hover:bg-slate-200/70 transition" title="My Profile">
+        {% if user.profile_image %}
+        <img src="{{ user.profile_image.url }}" class="h-8 w-8 rounded-full object-cover">
+        {% else %}
         <div class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
           {{ user.first_name|slice:"0:1" }}
         </div>
-        <div class="hidden sm:block">
+        {% endif %}
+        <div class="hidden sm:block text-left">
           <p class="text-sm font-semibold leading-tight">{{ user.first_name }} {{ user.last_name }}</p>
           <p class="text-xs text-slate-500 leading-tight">User</p>
         </div>
-      </div>
+      </button>
       <a href="{% url 'logout' %}" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition">
         <i data-lucide="log-out" class="w-4 h-4"></i> Logout
       </a>
@@ -232,6 +237,63 @@
         {% endif %}
       </div>
     </div>
+  </section>
+
+  <!-- Profile section -->
+  <section id="profile-section" class="hidden">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight">My Profile</h1>
+        <p class="mt-1 text-slate-500">Manage your account information and photo.</p>
+      </div>
+      <button onclick="showSection('dashboard-main')" class="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-slate-50 transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'user_profile' %}" enctype="multipart/form-data" class="mt-6 space-y-6">
+      {% csrf_token %}
+      <div class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-200 p-5 sm:p-8">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+          <div class="text-center shrink-0">
+            {% if user.profile_image %}
+            <img src="{{ user.profile_image.url }}" class="w-32 h-32 rounded-full object-cover border-4 border-slate-200 shadow-sm">
+            {% else %}
+            <div class="w-32 h-32 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl font-bold">{{ user.first_name|slice:":1" }}</div>
+            {% endif %}
+            <label class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+              <i data-lucide="upload" class="w-4 h-4"></i> Change Photo
+              <input type="file" name="profile_image" accept="image/*" class="hidden" onchange="this.closest('form').querySelector('.file-name').textContent = this.files[0] ? this.files[0].name : ''">
+            </label>
+            <p class="file-name mt-1 text-xs text-slate-400"></p>
+          </div>
+          <div class="flex-1 w-full grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-600 mb-1">First Name</label>
+              <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-600 mb-1">Last Name</label>
+              <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-600 mb-1">Username</label>
+              <input type="text" value="{{ user.username }}" readonly class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-slate-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-600 mb-1">Email</label>
+              <input type="email" name="email" value="{{ user.email }}" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button type="submit" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold transition shadow-sm">
+          <i data-lucide="check" class="w-4 h-4"></i> Save Changes
+        </button>
+      </div>
+    </form>
   </section>
 
   <!-- Settings section -->
