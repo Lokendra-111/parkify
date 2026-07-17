@@ -46,6 +46,55 @@ def _format_stat(n):
     return f"{n}+"
 
 
+def _role_dashboard_name(role):
+    """Return the URL name of the dashboard belonging to a given role."""
+    return {
+        'admin': 'admin_dashboard',
+        'owner': 'owner_dashboard',
+        'user': 'dashboard',
+    }.get(role, 'dashboard')
+
+
+def _login_redirect(request, message=None):
+    """
+    Send an anonymous visitor to the login page while remembering the page
+    they were trying to reach, so they land back there - not on a generic
+    dashboard - once they've signed in.
+    """
+    if message:
+        messages.info(request, message)
+    next_url = request.get_full_path()
+    login_url = reverse('authentication')
+    return redirect(f"{login_url}?next={next_url}")
+
+
+def _wrong_role_redirect(request):
+    """
+    A logged-in user opened a page that belongs to a different role
+    (e.g. a user opening /owner-dashboard/). Instead of silently bouncing
+    them back to the login screen, send them to the dashboard that
+    actually belongs to their own account.
+    """
+    messages.info(request, "That page isn't available for your account. Here's your dashboard instead.")
+    return redirect(_role_dashboard_name(request.session.get('role')))
+
+
+def _get_safe_next(request, default_url_name):
+    """Resolve a safe `next` target from the request/session, guarding against open redirects."""
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    next_url = (
+        request.POST.get('next')
+        or request.GET.get('next')
+        or request.session.pop('login_next', None)
+    )
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return next_url
+    return reverse(default_url_name)
+
+
 # Landing Page
 def home(request):
 
@@ -213,6 +262,13 @@ def authentication(request):
                 )
                 return redirect('authentication')
 
+            # Remember where the person was headed (e.g. a specific parking
+            # listing or "my bookings") so we can send them there once
+            # login - including a 2FA/reactivation detour - is complete.
+            requested_next = request.POST.get('next') or request.GET.get('next')
+            if requested_next:
+                request.session['login_next'] = requested_next
+
             if not user.is_active:
                 _send_reactivation_otp(user)
                 request.session['pending_reactivation_user_id'] = user.id
@@ -237,17 +293,13 @@ def authentication(request):
                 f"Welcome {user.username}!"
             )
 
-            # Redirect by role
-            if user.role == 'admin':
-                return redirect('admin_dashboard')
+            # Send them back to whatever page they were trying to reach;
+            # fall back to the dashboard that matches their role.
+            return redirect(_get_safe_next(request, _role_dashboard_name(user.role)))
 
-            elif user.role == 'owner':
-                return redirect('owner_dashboard')
-
-            else:
-                return redirect('dashboard')
-
-    return render(request, 'authentication.html')
+    return render(request, 'authentication.html', {
+        'next': request.GET.get('next', ''),
+    })
 
 
 def _send_login_otp(user):
@@ -315,12 +367,7 @@ def verify_otp(request):
 
         messages.success(request, f"Welcome {user.username}!")
 
-        if user.role == 'admin':
-            return redirect('admin_dashboard')
-        elif user.role == 'owner':
-            return redirect('owner_dashboard')
-        else:
-            return redirect('dashboard')
+        return redirect(_get_safe_next(request, _role_dashboard_name(user.role)))
 
     return render(request, 'verify_otp.html', {'email': user.email})
 
@@ -412,22 +459,17 @@ def reactivate_account(request):
         if user.role == 'owner':
             messages.info(request, "Your parking listings were hidden when you deactivated your account. Re-enable them from 'My Parking Lots' whenever you're ready.")
 
-        if user.role == 'admin':
-            return redirect('admin_dashboard')
-        elif user.role == 'owner':
-            return redirect('owner_dashboard')
-        else:
-            return redirect('dashboard')
+        return redirect(_get_safe_next(request, _role_dashboard_name(user.role)))
 
     return render(request, 'reactivate_account.html', {'email': user.email})
 # Admin Dashboard
 def admin_dashboard(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     if request.session.get('role') != 'admin':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     admin = Signup.objects.get(id=request.session['user_id'])
 
@@ -525,10 +567,10 @@ def reject_owner(request, owner_id):
 def dashboard(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     if request.session.get('role') != 'user':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     user = Signup.objects.get(id=request.session['user_id'])
     bookings_qs = Booking.objects.filter(user=user).order_by('-created_at')
@@ -555,10 +597,10 @@ def dashboard(request):
 def user_profile(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     if request.session.get('role') != 'user':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     user = Signup.objects.get(id=request.session['user_id'])
 
@@ -601,7 +643,7 @@ def saved_locations_toggle(request, parking_id):
 def saved_locations_list(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     user = Signup.objects.get(id=request.session['user_id'])
     saved = SavedLocation.objects.filter(user=user).select_related('parking').order_by('-saved_at')
@@ -629,10 +671,10 @@ def saved_location_remove(request, saved_id):
 def owner_dashboard(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner = Signup.objects.get(
         id=request.session['user_id']
@@ -771,8 +813,11 @@ def owner_dashboard(request):
 # Owner profile
 def owner_profile(request):
 
+    if not request.session.get('user_id'):
+        return _login_redirect(request)
+
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner_user = Signup.objects.get(
         id=request.session['user_id']
@@ -840,8 +885,11 @@ def owner_profile(request):
 # Owner Document
 def owner_document(request):
 
+    if not request.session.get('user_id'):
+        return _login_redirect(request)
+
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner_user = Signup.objects.get(id=request.session['user_id'])
 
@@ -899,8 +947,11 @@ def owner_document(request):
     })
 def add_parking(request):
 
+    if not request.session.get('user_id'):
+        return _login_redirect(request)
+
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner_user = Signup.objects.get(
         id=request.session['user_id']
@@ -1001,8 +1052,11 @@ def add_parking(request):
 #my parking lot
 def my_parking_lots(request):
 
+    if not request.session.get('user_id'):
+        return _login_redirect(request)
+
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner_user = Signup.objects.get(id=request.session['user_id'])
 
@@ -1018,8 +1072,11 @@ def my_parking_lots(request):
 #edit
 def edit_parking(request, parking_id):
 
+    if not request.session.get('user_id'):
+        return _login_redirect(request)
+
     if request.session.get('role') != 'owner':
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     owner_user = Signup.objects.get(id=request.session['user_id'])
     profile = OwnerProfile.objects.get(owner=owner_user)
@@ -1233,11 +1290,11 @@ def book_parking(request, parking_id):
 
     if not request.session.get('user_id'):
         messages.error(request, "Please login to book a parking spot.")
-        return redirect('authentication')
+        return redirect(f"{reverse('authentication')}?next={reverse('view_parking', args=[parking_id])}")
 
     if request.session.get('role') != 'user':
         messages.error(request, "Only users can book parking spots.")
-        return redirect('authentication')
+        return _wrong_role_redirect(request)
 
     parking = get_object_or_404(ParkingLot, id=parking_id, is_active=True)
 
@@ -1364,7 +1421,7 @@ def _generate_txn_id():
 def payment_page(request, booking_id):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     booking = get_object_or_404(
         Booking, id=booking_id, user_id=request.session['user_id']
@@ -1542,7 +1599,7 @@ def admin_delete_review(request, review_id):
 def my_bookings(request):
 
     if not request.session.get('user_id'):
-        return redirect('authentication')
+        return _login_redirect(request)
 
     bookings = Booking.objects.filter(
         user_id=request.session['user_id']
