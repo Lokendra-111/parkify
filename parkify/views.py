@@ -297,8 +297,14 @@ def authentication(request):
             # fall back to the dashboard that matches their role.
             return redirect(_get_safe_next(request, _role_dashboard_name(user.role)))
 
+    stats = {
+        'total_lots_display': _format_stat(ParkingLot.objects.filter(is_active=True).count()),
+        'total_users_display': _format_stat(Signup.objects.filter(role='user').count()),
+    }
+
     return render(request, 'authentication.html', {
         'next': request.GET.get('next', ''),
+        'stats': stats,
     })
 
 
