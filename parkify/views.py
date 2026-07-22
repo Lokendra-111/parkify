@@ -95,6 +95,45 @@ def _get_safe_next(request, default_url_name):
     return reverse(default_url_name)
 
 
+def _platform_stats():
+    """
+    Real, database-backed platform stats - number of active parking lots,
+    number of registered users, average review rating, and currently-free
+    spots across every active lot today. Used on the homepage and reused
+    on the authentication modal so both show the same live numbers instead
+    of hardcoded placeholders.
+    """
+    today = date.today()
+
+    active_lots = ParkingLot.objects.filter(is_active=True)
+    total_lots = active_lots.count()
+    total_users = Signup.objects.filter(role='user').count()
+
+    rating_agg = Review.objects.aggregate(avg=models.Avg('rating'))['avg']
+    platform_rating = round(rating_agg, 1) if rating_agg else 5.0
+
+    # Sum of currently-free car+bike slots across every active lot, today.
+    total_available_spots = 0
+    for lot in active_lots:
+        car_booked = Booking.objects.filter(
+            parking_name=lot.parking_name, vehicle_type='Car',
+            booking_date=today, status__in=['Pending', 'Active']
+        ).count()
+        bike_booked = Booking.objects.filter(
+            parking_name=lot.parking_name, vehicle_type='Bike',
+            booking_date=today, status__in=['Pending', 'Active']
+        ).count()
+        total_available_spots += max(lot.car_capacity - car_booked, 0)
+        total_available_spots += max(lot.bike_capacity - bike_booked, 0)
+
+    return {
+        'total_lots_display': _format_stat(total_lots),
+        'total_users_display': _format_stat(total_users),
+        'platform_rating': platform_rating,
+        'total_available_spots': total_available_spots,
+    }
+
+
 # Landing Page
 def home(request):
 
@@ -143,33 +182,7 @@ def home(request):
 
     # ---- Platform-wide stats (hero + stats-strip + floating badges) ----
 
-    active_lots = ParkingLot.objects.filter(is_active=True)
-    total_lots = active_lots.count()
-    total_users = Signup.objects.filter(role='user').count()
-
-    rating_agg = Review.objects.aggregate(avg=models.Avg('rating'))['avg']
-    platform_rating = round(rating_agg, 1) if rating_agg else 5.0
-
-    # Sum of currently-free car+bike slots across every active lot, today.
-    total_available_spots = 0
-    for lot in active_lots:
-        car_booked = Booking.objects.filter(
-            parking_name=lot.parking_name, vehicle_type='Car',
-            booking_date=today, status__in=['Pending', 'Active']
-        ).count()
-        bike_booked = Booking.objects.filter(
-            parking_name=lot.parking_name, vehicle_type='Bike',
-            booking_date=today, status__in=['Pending', 'Active']
-        ).count()
-        total_available_spots += max(lot.car_capacity - car_booked, 0)
-        total_available_spots += max(lot.bike_capacity - bike_booked, 0)
-
-    stats = {
-        'total_lots_display': _format_stat(total_lots),
-        'total_users_display': _format_stat(total_users),
-        'platform_rating': platform_rating,
-        'total_available_spots': total_available_spots,
-    }
+    stats = _platform_stats()
 
     # ---- Real testimonials, best-rated first ----
 
@@ -297,14 +310,9 @@ def authentication(request):
             # fall back to the dashboard that matches their role.
             return redirect(_get_safe_next(request, _role_dashboard_name(user.role)))
 
-    stats = {
-        'total_lots_display': _format_stat(ParkingLot.objects.filter(is_active=True).count()),
-        'total_users_display': _format_stat(Signup.objects.filter(role='user').count()),
-    }
-
     return render(request, 'authentication.html', {
         'next': request.GET.get('next', ''),
-        'stats': stats,
+        'stats': _platform_stats(),
     })
 
 
