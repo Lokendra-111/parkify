@@ -202,6 +202,30 @@ def home(request):
 
 
 
+# Google Signup (choose a role before handing off to Google)
+def google_signup_start(request):
+    """
+    allauth's google_login link doesn't carry any custom params through the
+    Google round-trip - only `next` survives (see ParkifySocialAccountAdapter
+    for how that part works). To let people choose User vs Owner *before*
+    going to Google, we stash the choice in the session here (which persists
+    across the redirect to Google and back, unlike a GET param) and then
+    forward to the real google_login view. ParkifySocialAccountAdapter reads
+    and clears this session key, and only applies it to brand-new accounts -
+    an existing account's role is never changed this way.
+    """
+    role = request.GET.get('role', 'user')
+    if role not in ('user', 'owner'):
+        role = 'user'
+    request.session['pending_google_signup_role'] = role
+
+    next_url = request.GET.get('next', '')
+    google_login_url = reverse('google_login')
+    if next_url:
+        google_login_url += f'?next={next_url}'
+    return redirect(google_login_url)
+
+
 # Authentication Page
 def authentication(request):
 
@@ -604,7 +628,6 @@ def dashboard(request):
         'saved_locations': saved_locations,
     })
 
-# TODO(owner): finish analytics widgets and saved-locations backend wiring; stop short of full CRM.
 
 
 # User profile - lets a regular user update their name, email and profile picture
@@ -814,6 +837,7 @@ def owner_dashboard(request):
         'bookings': bookings,
         'occupancy': occupancy,
         'revenue_per_lot': revenue_per_lot,
+        'max_lot_revenue': max([r['revenue'] for r in revenue_per_lot], default=0),
         'start_date': start_date,
         'end_date': end_date,
     }
@@ -823,7 +847,6 @@ def owner_dashboard(request):
         'owner_dashboard.html',
         context
     )
-# TODO(owner): add revenue-per-lot breakdown and booking date-window picker; stop before analytics suite.
 # Owner profile
 def owner_profile(request):
 
@@ -1282,7 +1305,6 @@ def browse_parking(request):
     return render(request, 'browse_parking.html', context)
 
 
-# TODO(owner): make dashboard compute owner revenue/occupancy from a single date-windowed aggregation so stats stay consistent with bookings.
 def map_search(request):
     parkings = list(ParkingLot.objects.filter(is_active=True)[:200])
     sites = [
@@ -2019,6 +2041,3 @@ def change_password(request):
         return redirect(dashboard_name)
 
     return render(request, 'change_password.html')
-
-# TODO(owner): expand SavedLocation endpoints after browse_parking map/bookmark UI is wired.
-# TODO(owner): add optional password-change email notification when backend mail is configured.
