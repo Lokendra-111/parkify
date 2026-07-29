@@ -12,8 +12,6 @@
   body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   .fade-up { animation: fadeUp .45s ease both; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
-  .guessive-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-  .guessive-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -21,7 +19,15 @@
 <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200/70">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
     <div class="flex items-center gap-3 min-w-0">
-      <a href="{% url 'home' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+      {% if request.session.user_id %}
+        {% if request.session.role == 'owner' %}
+        <a href="{% url 'owner_dashboard' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+        {% else %}
+        <a href="{% url 'dashboard' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'home' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+      {% endif %}
       <span class="hidden sm:inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2.5 py-1 text-xs font-semibold">Explore</span>
     </div>
     <div class="flex items-center gap-2 sm:gap-3">
@@ -117,7 +123,7 @@
 
   <div class="mt-6">
     <div class="flex items-center justify-between gap-3">
-      <p class="text-sm text-slate-500">{{ results|length }} parking spot{{ results|length|pluralize }} found</p>
+      <p class="text-sm text-slate-500">{{ parkings_page.paginator.count }} parking spot{{ parkings_page.paginator.count|pluralize }} found</p>
       <a href="{% url 'map_search' %}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-emerald-700 transition">
         <i data-lucide="map" class="w-4 h-4"></i> Map view
       </a>
@@ -191,6 +197,19 @@
       </article>
       {% endfor %}
     </div>
+    {% if parkings_page.paginator.num_pages > 1 %}
+    <div class="flex items-center justify-between mt-6 text-sm">
+      <p class="text-slate-500">Page {{ parkings_page.number }} of {{ parkings_page.paginator.num_pages }}</p>
+      <div class="flex gap-2">
+        {% if parkings_page.has_previous %}
+        <a href="?q={{ query }}&vehicle={{ vehicle }}&sort={{ sort }}&page={{ parkings_page.previous_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Previous</a>
+        {% endif %}
+        {% if parkings_page.has_next %}
+        <a href="?q={{ query }}&vehicle={{ vehicle }}&sort={{ sort }}&page={{ parkings_page.next_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Next</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="mt-6 rounded-2xl bg-white ring-1 ring-slate-200 p-10 text-center text-slate-500">
       <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">

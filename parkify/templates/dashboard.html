@@ -514,6 +514,11 @@ function toggleSidebar(open) {
   const label = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   document.getElementById('greeting').textContent = label + ', have a great day.';
 })();
+
+const paramsSection = new URLSearchParams(window.location.search).get('section');
+if (paramsSection && sectionTitles[paramsSection]) {
+  showSection(paramsSection);
+}
 </script>
 </body>
 </html>

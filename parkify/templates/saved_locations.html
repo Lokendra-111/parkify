@@ -19,7 +19,11 @@
 <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200/70">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
     <div class="flex items-center gap-3 min-w-0">
-      <a href="{% url 'home' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+      {% if request.session.role == 'owner' %}
+      <a href="{% url 'owner_dashboard' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+      {% else %}
+      <a href="{% url 'dashboard' %}" class="text-lg sm:text-xl font-extrabold tracking-tight truncate">Parkify</a>
+      {% endif %}
     </div>
     <div class="flex items-center gap-2 sm:gap-3">
       <a href="{% url 'browse_parking' %}" class="hidden sm:inline-flex items-center gap-2 border border-slate-200 bg-white px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-slate-50 transition">

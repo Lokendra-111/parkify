@@ -146,14 +146,14 @@
             <p class="text-xs font-medium text-slate-500">Owners</p>
             <div class="h-7 w-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i data-lucide="users" class="w-3.5 h-3.5"></i></div>
           </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">{{ owners|length }}</p>
+          <p class="mt-3 text-2xl font-semibold tracking-tight">{{ total_owners_count }}</p>
         </div>
         <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
           <div class="flex items-center justify-between">
             <p class="text-xs font-medium text-slate-500">Parking Lots</p>
             <div class="h-7 w-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i data-lucide="square-parking" class="w-3.5 h-3.5"></i></div>
           </div>
-          <p class="mt-3 text-2xl font-semibold tracking-tight">{{ parking_lots|length }}</p>
+          <p class="mt-3 text-2xl font-semibold tracking-tight">{{ total_parking_lots_count }}</p>
         </div>
         <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
           <div class="flex items-center justify-between">
@@ -188,9 +188,22 @@
 
     <!-- ============ OWNERS ============ -->
     <section id="owners-section" class="hidden">
-      <div class="mb-5">
-        <h1 class="text-xl font-semibold tracking-tight">Owners</h1>
-        <p class="mt-0.5 text-sm text-slate-500">{{ owners|length }} registered owner{{ owners|length|pluralize }}.</p>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight">Owners</h1>
+          <p class="mt-0.5 text-sm text-slate-500">{{ owners_page.paginator.count }} registered owner{{ owners_page.paginator.count|pluralize }}.</p>
+        </div>
+        <form method="GET" class="flex items-center gap-2">
+          <input type="hidden" name="section" value="owners-section">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" name="owners_q" value="{{ owners_search }}" placeholder="Search owners..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition w-56">
+          </div>
+          <button type="submit" class="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-sm font-medium transition">Search</button>
+          {% if owners_search %}
+          <a href="{% url 'admin_dashboard' %}?section=owners-section" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition">Clear</a>
+          {% endif %}
+        </form>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <div class="overflow-x-auto">
@@ -204,7 +217,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              {% for owner in owners %}
+              {% for owner in owners_page %}
               <tr class="hover:bg-slate-50 transition">
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2.5">
@@ -223,23 +236,49 @@
                 </td>
               </tr>
               {% empty %}
-              <tr><td colspan="4" class="px-4 py-10 text-center text-slate-500">No owners registered.</td></tr>
+              <tr><td colspan="4" class="px-4 py-10 text-center text-slate-500">No owners found.</td></tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
+      {% if owners_page.paginator.num_pages > 1 %}
+      <div class="flex items-center justify-between mt-4 text-sm">
+        <p class="text-slate-500">Page {{ owners_page.number }} of {{ owners_page.paginator.num_pages }}</p>
+        <div class="flex gap-2">
+          {% if owners_page.has_previous %}
+          <a href="?section=owners-section&owners_q={{ owners_search }}&owners_page={{ owners_page.previous_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Previous</a>
+          {% endif %}
+          {% if owners_page.has_next %}
+          <a href="?section=owners-section&owners_q={{ owners_search }}&owners_page={{ owners_page.next_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Next</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </section>
 
     <!-- ============ PARKING LOTS ============ -->
     <section id="parking-section" class="hidden">
-      <div class="mb-5">
-        <h1 class="text-xl font-semibold tracking-tight">Parking Lots</h1>
-        <p class="mt-0.5 text-sm text-slate-500">{{ parking_lots|length }} lot{{ parking_lots|length|pluralize }}.</p>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight">Parking Lots</h1>
+          <p class="mt-0.5 text-sm text-slate-500">{{ parking_page.paginator.count }} lot{{ parking_page.paginator.count|pluralize }}.</p>
+        </div>
+        <form method="GET" class="flex items-center gap-2">
+          <input type="hidden" name="section" value="parking-section">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" name="parking_q" value="{{ parking_search }}" placeholder="Search parking lots..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition w-56">
+          </div>
+          <button type="submit" class="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-sm font-medium transition">Search</button>
+          {% if parking_search %}
+          <a href="{% url 'admin_dashboard' %}?section=parking-section" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition">Clear</a>
+          {% endif %}
+        </form>
       </div>
 
       <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-        {% for parking in parking_lots %}
+        {% for parking in parking_page %}
         <div class="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 hover:border-slate-300 transition">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -271,9 +310,22 @@
           </div>
         </div>
         {% empty %}
-        <div class="col-span-full text-center py-16 text-slate-500 text-sm rounded-xl border border-slate-200 bg-white">No parking lots available.</div>
+        <div class="col-span-full text-center py-16 text-slate-500 text-sm rounded-xl border border-slate-200 bg-white">No parking lots found.</div>
         {% endfor %}
       </div>
+      {% if parking_page.paginator.num_pages > 1 %}
+      <div class="flex items-center justify-between mt-4 text-sm">
+        <p class="text-slate-500">Page {{ parking_page.number }} of {{ parking_page.paginator.num_pages }}</p>
+        <div class="flex gap-2">
+          {% if parking_page.has_previous %}
+          <a href="?section=parking-section&parking_q={{ parking_search }}&parking_page={{ parking_page.previous_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Previous</a>
+          {% endif %}
+          {% if parking_page.has_next %}
+          <a href="?section=parking-section&parking_q={{ parking_search }}&parking_page={{ parking_page.next_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Next</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </section>
 
     <!-- ============ BOOKINGS ============ -->
@@ -281,17 +333,25 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
           <h1 class="text-xl font-semibold tracking-tight">Bookings</h1>
-          <p class="mt-0.5 text-sm text-slate-500">Oversight and status management.</p>
+          <p class="mt-0.5 text-sm text-slate-500">{{ bookings_page.paginator.count }} booking{{ bookings_page.paginator.count|pluralize }}.</p>
         </div>
-        <form method="GET" class="flex items-center gap-2">
+        <form method="GET" class="flex flex-wrap items-center gap-2">
           <input type="hidden" name="section" value="bookings-section">
-          <select name="status" onchange="this.form.submit()" class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" name="bookings_q" value="{{ bookings_search }}" placeholder="Search user, vehicle, lot..." class="pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition w-56">
+          </div>
+          <select name="status" class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition">
             <option value="">All Statuses</option>
             <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
             <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
             <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
             <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
           </select>
+          <button type="submit" class="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-sm font-medium transition">Filter</button>
+          {% if bookings_search or status_filter %}
+          <a href="{% url 'admin_dashboard' %}?section=bookings-section" class="text-sm font-medium text-slate-500 hover:text-slate-700 transition">Clear</a>
+          {% endif %}
         </form>
       </div>
 
@@ -311,7 +371,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              {% for booking in bookings %}
+              {% for booking in bookings_page %}
               <tr class="hover:bg-slate-50 transition">
                 <td class="px-4 py-3 font-semibold">#{{ booking.id }}</td>
                 <td class="px-4 py-3">{{ booking.user.username }}</td>
@@ -345,13 +405,26 @@
           </table>
         </div>
       </div>
+      {% if bookings_page.paginator.num_pages > 1 %}
+      <div class="flex items-center justify-between mt-4 text-sm">
+        <p class="text-slate-500">Page {{ bookings_page.number }} of {{ bookings_page.paginator.num_pages }}</p>
+        <div class="flex gap-2">
+          {% if bookings_page.has_previous %}
+          <a href="?section=bookings-section&bookings_q={{ bookings_search }}&status={{ status_filter }}&bookings_page={{ bookings_page.previous_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Previous</a>
+          {% endif %}
+          {% if bookings_page.has_next %}
+          <a href="?section=bookings-section&bookings_q={{ bookings_search }}&status={{ status_filter }}&bookings_page={{ bookings_page.next_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Next</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </section>
 
     <!-- ============ REVIEWS ============ -->
     <section id="reviews-section" class="hidden">
       <div class="mb-5">
         <h1 class="text-xl font-semibold tracking-tight">Reviews</h1>
-        <p class="mt-0.5 text-sm text-slate-500">Moderation and quality control.</p>
+        <p class="mt-0.5 text-sm text-slate-500">{{ reviews_page.paginator.count }} review{{ reviews_page.paginator.count|pluralize }} - moderation and quality control.</p>
       </div>
       <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <div class="overflow-x-auto">
@@ -369,7 +442,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              {% for review in reviews %}
+              {% for review in reviews_page %}
               <tr class="hover:bg-slate-50 transition align-top">
                 <td class="px-4 py-3">#{{ review.id }}</td>
                 <td class="px-4 py-3 font-medium">{{ review.parking.parking_name }}</td>
@@ -400,6 +473,19 @@
           </table>
         </div>
       </div>
+      {% if reviews_page.paginator.num_pages > 1 %}
+      <div class="flex items-center justify-between mt-4 text-sm">
+        <p class="text-slate-500">Page {{ reviews_page.number }} of {{ reviews_page.paginator.num_pages }}</p>
+        <div class="flex gap-2">
+          {% if reviews_page.has_previous %}
+          <a href="?section=reviews-section&reviews_page={{ reviews_page.previous_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Previous</a>
+          {% endif %}
+          {% if reviews_page.has_next %}
+          <a href="?section=reviews-section&reviews_page={{ reviews_page.next_page_number }}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium hover:bg-slate-50 transition">Next</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </section>
 
     <!-- ============ VERIFICATION ============ -->
@@ -654,9 +740,12 @@ function toggleSidebar(open) {
   backdrop.classList.toggle('pointer-events-none', !open);
 }
 
-{% if status_filter %}
-showSection('bookings-section');
-{% endif %}
+const paramsSection = new URLSearchParams(window.location.search).get('section');
+if (paramsSection && sectionTitles[paramsSection]) {
+  showSection(paramsSection);
+} else if ({% if status_filter %}true{% else %}false{% endif %}) {
+  showSection('bookings-section');
+}
 </script>
 </body>
 </html>

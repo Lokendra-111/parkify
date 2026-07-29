@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.db import models
 from django.db.models import Sum
@@ -516,15 +517,9 @@ def admin_dashboard(request):
         ownerdocument__isnull=False
     ).distinct().prefetch_related('ownerdocument_set')
 
-    owners = OwnerProfile.objects.all()
-
-    parking_lots = ParkingLot.objects.all()
-
-    bookings = Booking.objects.select_related('user').all().order_by('-created_at')
-
-    status_filter = request.GET.get('status', '')
-    if status_filter:
-        bookings = bookings.filter(status=status_filter)
+    # ---- Overview stat counts - cheap DB-level counts, not full row fetches ----
+    total_owners_count = OwnerProfile.objects.count()
+    total_parking_lots_count = ParkingLot.objects.count()
 
     total_revenue = PaymentTransaction.objects.filter(
         status='Success'
@@ -532,18 +527,61 @@ def admin_dashboard(request):
 
     active_bookings_count = Booking.objects.filter(status='Active').count()
 
-    reviews = Review.objects.select_related('parking', 'user').all()
+    # ---- Owners: searchable + paginated ----
+    owners_search = request.GET.get('owners_q', '').strip()
+    owners_qs = OwnerProfile.objects.all().order_by('-id')
+    if owners_search:
+        owners_qs = owners_qs.filter(
+            models.Q(full_name__icontains=owners_search) |
+            models.Q(company_name__icontains=owners_search) |
+            models.Q(phone__icontains=owners_search)
+        )
+    owners_page = Paginator(owners_qs, 10).get_page(request.GET.get('owners_page'))
+
+    # ---- Parking lots: searchable + paginated ----
+    parking_search = request.GET.get('parking_q', '').strip()
+    parking_qs = ParkingLot.objects.select_related('owner').all().order_by('-created_at')
+    if parking_search:
+        parking_qs = parking_qs.filter(
+            models.Q(parking_name__icontains=parking_search) |
+            models.Q(location__icontains=parking_search)
+        )
+    parking_page = Paginator(parking_qs, 9).get_page(request.GET.get('parking_page'))
+
+    # ---- Bookings: existing status filter + new search, both paginated ----
+    bookings_search = request.GET.get('bookings_q', '').strip()
+    bookings_qs = Booking.objects.select_related('user').all().order_by('-created_at')
+
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        bookings_qs = bookings_qs.filter(status=status_filter)
+    if bookings_search:
+        bookings_qs = bookings_qs.filter(
+            models.Q(user__username__icontains=bookings_search) |
+            models.Q(vehicle_number__icontains=bookings_search) |
+            models.Q(parking_name__icontains=bookings_search)
+        )
+    bookings_page = Paginator(bookings_qs, 15).get_page(request.GET.get('bookings_page'))
+
+    # ---- Reviews: paginated ----
+    reviews_qs = Review.objects.select_related('parking', 'user').all().order_by('-created_at')
+    reviews_page = Paginator(reviews_qs, 15).get_page(request.GET.get('reviews_page'))
 
     context = {
         'admin': admin,
         'pending_owners': pending_owners,
-        'owners': owners,
-        'parking_lots': parking_lots,
-        'bookings': bookings,
+        'total_owners_count': total_owners_count,
+        'total_parking_lots_count': total_parking_lots_count,
+        'owners_page': owners_page,
+        'owners_search': owners_search,
+        'parking_page': parking_page,
+        'parking_search': parking_search,
+        'bookings_page': bookings_page,
+        'bookings_search': bookings_search,
         'status_filter': status_filter,
         'total_revenue': total_revenue,
         'active_bookings_count': active_bookings_count,
-        'reviews': reviews,
+        'reviews_page': reviews_page,
     }
 
     return render(request, 'admin_dashboard.html', context)
@@ -835,8 +873,19 @@ def owner_dashboard(request):
         except ValueError:
             pass
 
-    recent_bookings_qs = owner_bookings_qs.select_related('user').order_by('-created_at')[:10]
-    bookings = list(recent_bookings_qs)
+    recent_bookings = list(owner_bookings_qs.select_related('user').order_by('-created_at')[:5])
+
+    # Full booking history for this owner - searchable + paginated, so bookings
+    # beyond the most recent aren't permanently invisible/unmanageable.
+    bookings_search = request.GET.get('bookings_q', '').strip()
+    all_owner_bookings_qs = owner_bookings_qs.select_related('user').order_by('-created_at')
+    if bookings_search:
+        all_owner_bookings_qs = all_owner_bookings_qs.filter(
+            models.Q(user__username__icontains=bookings_search) |
+            models.Q(vehicle_number__icontains=bookings_search) |
+            models.Q(parking_name__icontains=bookings_search)
+        )
+    bookings_page = Paginator(all_owner_bookings_qs, 10).get_page(request.GET.get('bookings_page'))
 
     occupied_total = owner_bookings_qs.filter(
         status__in=['Pending', 'Active'],
@@ -888,7 +937,9 @@ def owner_dashboard(request):
         'status_breakdown': status_breakdown,
         'revenue_change_pct': revenue_change_pct,
         'bookings_change_pct': bookings_change_pct,
-        'bookings': bookings,
+        'recent_bookings': recent_bookings,
+        'bookings_page': bookings_page,
+        'bookings_search': bookings_search,
         'occupancy': occupancy,
         'revenue_per_lot': revenue_per_lot,
         'max_lot_revenue': max([r['revenue'] for r in revenue_per_lot], default=0),
@@ -1314,6 +1365,12 @@ def browse_parking(request):
     else:
         parkings = parkings.order_by('-created_at')
 
+    # Paginate BEFORE computing per-lot availability below - otherwise every
+    # active lot on the platform would get two extra Booking queries run
+    # against it on every single page load, regardless of how many results
+    # are actually shown.
+    parkings_page = Paginator(parkings, 12).get_page(request.GET.get('page'))
+
     results = []
     today = date.today()
 
@@ -1325,7 +1382,7 @@ def browse_parking(request):
             ).values_list('parking_id', flat=True)
         )
 
-    for parking in parkings:
+    for parking in parkings_page:
 
         car_booked = Booking.objects.filter(
             parking_name=parking.parking_name,
@@ -1360,6 +1417,7 @@ def browse_parking(request):
 
     context = {
         'results': results,
+        'parkings_page': parkings_page,
         'query': query,
         'vehicle': vehicle,
         'sort': sort,
@@ -1701,17 +1759,34 @@ def my_bookings(request):
     if not request.session.get('user_id'):
         return _login_redirect(request)
 
-    bookings = Booking.objects.filter(
+    bookings_qs = Booking.objects.filter(
         user_id=request.session['user_id']
     ).select_related('review').order_by('-created_at')
 
-    for booking in bookings:
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        bookings_qs = bookings_qs.filter(status=status_filter)
+
+    search = request.GET.get('q', '').strip()
+    if search:
+        bookings_qs = bookings_qs.filter(
+            models.Q(vehicle_number__icontains=search) |
+            models.Q(parking_name__icontains=search)
+        )
+
+    bookings_page = Paginator(bookings_qs, 10).get_page(request.GET.get('page'))
+
+    for booking in bookings_page:
         booking.existing_review = getattr(booking, 'review', None)
         booking.can_review = (
             booking.status == 'Completed' and booking.existing_review is None
         )
 
-    return render(request,'my_bookings.html',{'bookings': bookings})
+    return render(request, 'my_bookings.html', {
+        'bookings_page': bookings_page,
+        'status_filter': status_filter,
+        'search': search,
+    })
 # ---- Review & Rating module ----
 
 def _get_parking_for_booking(booking):
@@ -2041,6 +2116,12 @@ def change_password(request):
 
     user = Signup.objects.get(id=request.session['user_id'])
 
+    dashboard_name = 'dashboard'
+    if role == 'owner':
+        dashboard_name = 'owner_dashboard'
+    elif role == 'admin':
+        dashboard_name = 'admin_dashboard'
+
     if request.method == "POST":
         current_password = request.POST.get("current_password", "")
         new_password = request.POST.get("new_password", "")
@@ -2053,41 +2134,30 @@ def change_password(request):
         except ValueError:
             valid = user.password == current_password
 
+        error = None
         if not valid:
-            messages.error(request, "Current password is incorrect.")
-            return render(request, 'change_password.html', {
-                'current_password': current_password
-            })
+            error = "Current password is incorrect."
+        elif new_password != confirm_password:
+            error = "New passwords do not match."
+        elif current_password == new_password:
+            error = "New password cannot be the same as the current password."
+        elif len(new_password) < 8:
+            error = "Password must be at least 8 characters long."
 
-        if new_password != confirm_password:
-            messages.error(request, "New passwords do not match.")
-            return render(request, 'change_password.html', {
-                'current_password': current_password
-            })
-
-        if current_password == new_password:
-            messages.error(request, "New password cannot be the same as the current password.")
-            return render(request, 'change_password.html', {
-                'current_password': current_password
-            })
-
-        if len(new_password) < 8:
-            messages.error(request, "Password must be at least 8 characters long.")
-            return render(request, 'change_password.html', {
-                'current_password': current_password
-            })
+        if error:
+            messages.error(request, error)
+            # Stay inside the dashboard's embedded Change Password tab rather
+            # than dropping the person onto the old standalone page.
+            return redirect(reverse(dashboard_name) + '?section=change-password-section')
 
         user.password = make_password(new_password)
         user.save(update_fields=["password"])
 
         success_message = "Password changed successfully."
-        dashboard_name = 'dashboard'
         if role == 'owner':
             success_message = "Owner password updated successfully."
-            dashboard_name = 'owner_dashboard'
         elif role == 'admin':
             success_message = "Admin password updated successfully."
-            dashboard_name = 'admin_dashboard'
 
         messages.success(request, success_message)
 
@@ -2102,6 +2172,6 @@ def change_password(request):
         except Exception:
             pass
 
-        return redirect(dashboard_name)
+        return redirect(reverse(dashboard_name) + '?section=setting-section')
 
     return render(request, 'change_password.html')
